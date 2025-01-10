@@ -40,10 +40,6 @@ import org.techbd.service.http.hub.prime.AppConfig;
 import org.techbd.udi.UdiPrimeJpaConfig;
 import static org.techbd.udi.auto.jooq.ingress.Tables.INTERACTION_HTTP_REQUEST;
 
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -65,36 +61,30 @@ public class FhirController {
     private final AppConfig appConfig;
     private final UdiPrimeJpaConfig udiPrimeJpaConfig;
     private final FHIRService fhirService;
-    private final Tracer tracer;
-    private final Meter meter;
 
     public FhirController(@SuppressWarnings("PMD.UnusedFormalParameter") final Environment environment,
             final AppConfig appConfig,
             final UdiPrimeJpaConfig udiPrimeJpaConfig,
             final FHIRService fhirService,
             final OrchestrationEngine orchestrationEngine,
-            final Tracer tracer,
-            final Meter meter,
             @SuppressWarnings("PMD.UnusedFormalParameter") final SftpManager sftpManager,
             @SuppressWarnings("PMD.UnusedFormalParameter") final SandboxHelpers sboxHelpers) {
         this.appConfig = appConfig;
         this.udiPrimeJpaConfig = udiPrimeJpaConfig;
         this.fhirService = fhirService;
         this.engine = orchestrationEngine;
-        this.tracer = tracer;
-        this.meter = meter;
     }
 
     @GetMapping(value = "/metadata", produces = { MediaType.APPLICATION_XML_VALUE })
     @Operation(summary = "FHIR server's conformance statement")
     public String metadata(final Model model, HttpServletRequest request) {
-        final var baseUrl = Helpers.getBaseUrl(request);
+                final var baseUrl = Helpers.getBaseUrl(request);
 
-        model.addAttribute("version", appConfig.getVersion());
-        model.addAttribute("implUrlValue", baseUrl);
-        model.addAttribute("opDefnValue", baseUrl + "/OperationDefinition/Bundle--validate");
+                model.addAttribute("version", appConfig.getVersion());
+                model.addAttribute("implUrlValue", baseUrl);
+                model.addAttribute("opDefnValue", baseUrl + "/OperationDefinition/Bundle--validate");
 
-        return "metadata.xml";
+                return "metadata.xml";
     }
 
     @PostMapping(value = { "/Bundle", "/Bundle/" }, consumes = { MediaType.APPLICATION_JSON_VALUE,
@@ -191,12 +181,7 @@ public class FhirController {
                     """, required = false) @RequestParam(value = "mtls-strategy", required = false) String mtlsStrategy,
             @Parameter(description = "Optional parameter to decide whether the session cookie (JSESSIONID) should be deleted.", required = false) @RequestParam(value = "delete-session-cookie", required = false) Boolean deleteSessionCookie,
             HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-        Span span = tracer.spanBuilder("FhirController.validateBundleAndForward").startSpan();
-        LongCounter  bundleCounter =  meter.counterBuilder("bundle.received.total")
-                          .setDescription("Counts of Bundle requests received")
-                         .build();
-        try {
-        if (tenantId == null || tenantId.trim().isEmpty()) {
+                if (tenantId == null || tenantId.trim().isEmpty()) {
             LOG.error("FHIRController:Bundle Validate:: Tenant ID is missing or empty");
             throw new IllegalArgumentException("Tenant ID must be provided");
         }
@@ -213,10 +198,6 @@ public class FhirController {
                 customDataLakeApi, dataLakeApiContentType, healthCheck, isSync, includeRequestInOutcome,
                 includeIncomingPayloadInDB,
                 request, response, provenance, includeOperationOutcome, mtlsStrategy,null, null,null,SourceType.FHIR.name());
-        } finally {
-                bundleCounter.add(1);
-                span.end();
-        }
     }
 
     @PostMapping(value = { "/Bundle/$validate", "/Bundle/$validate/" }, consumes = {

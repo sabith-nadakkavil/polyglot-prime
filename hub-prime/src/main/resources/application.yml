@@ -5,24 +5,24 @@
 # - stage_TECHBD_xyz_abc_def
 # - prod_TECHBD_xyz_abc_def
 
-logging:
-  level:
-    org:
-      springframework: INFO
-      hibernate: ERROR
-      web: DEBUG
-      techbd:
-        service:
-          http:
-            hub:
-              prime:
-                api: INFO
-    ca:
-      uhn: WARN
-    root: INFO
-    io:
-      opentelemetry: TRACE
-      micrometer: TRACE
+# logging:
+#   level:
+#     org:
+#       springframework: INFO
+#       hibernate: ERROR
+#       web: DEBUG
+#       techbd:
+#         service:
+#           http:
+#             hub:
+#               prime:
+#                 api: INFO
+#     ca:
+#       uhn: WARN
+#     root: INFO
+      # io:
+      # opentelemetry: TRACE
+      # micrometer: TRACE
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE}
@@ -138,20 +138,28 @@ org:
           idleTimeout: 300000
           connectionTimeout: 30000
           maxLifetime: 1800000
-otel:
-  traces:
-    exporter: otlp
-    otlp:
-      enabled: true
-      authorizationTokenSecretName: null
+management: 
+  otlp: 
+    metrics: 
+      export: 
+        url: ${TECHBD_OPEN_OBSERVE_URL}/api/${TECHBD_OPEN_OBSERVE_STREAM_NAME}/v1/metrics
+        enabled: true 
+        step: 1m # Interval for pushing metrics 
+        headers: 
+          enabled: true 
+          Authorization: Basic ${TECHBD_OPEN_OBSERVE_PASSWORD}
+          organization: default
+          service: 
+            name: default
+    tracing: 
       endpoint: ${TECHBD_OPEN_OBSERVE_URL}/api/${TECHBD_OPEN_OBSERVE_STREAM_NAME}/v1/traces
-      headers:
-        Authorization: Basic ${TECHBD_OPEN_OBSERVE_PASSWORD} 
-  metrics:
-    exporter: otlp
-    otlp:
-      enabled: true
-      authorizationTokenSecretName: null
-      endpoint: ${TECHBD_OPEN_OBSERVE_URL}/api/${TECHBD_OPEN_OBSERVE_STREAM_NAME}/v1/metrics
-      headers:
+      headers: 
+        active : true
+        enabled: true  
         Authorization: Basic ${TECHBD_OPEN_OBSERVE_PASSWORD}
+        organization: default
+        stream-name: ${TECHBD_OPEN_OBSERVE_STREAM_NAME}-traces
+        service: 
+          name: default
+      timeout: 600s
+      compression: gzip
