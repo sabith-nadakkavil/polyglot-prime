@@ -169,39 +169,76 @@ public class CsvBundleProcessorService {
                     final Instant completedAt)
                     throws Exception {
 
-            final Map<String, Object> parameters = new HashMap<>();
-            parameters.put("resourceType", "Parameters");
+            Map<String, Object> parameters = new HashMap<>();
 
-            final List<Map<String, Object>> parameterList = new ArrayList<>();
+            // If there's existing provenance, use it as base for adding new fields,
+            // otherwise add minimal skeleton
+            if (existingProvenance != null && !existingProvenance.isEmpty()) {
+                    parameters = new HashMap<>(existingProvenance); // use a copy here to avoid modifying passed-in obj
+                                                                    // directly
 
-            parameterList.add(Map.of("name", "description",
-                            "valueString",
-                            "Bundle created from provided files for the given patientMrnId and encounterId"));
+                    List<Map<String, Object>> parameterList = (List<Map<String, Object>>) parameters
+                                    .getOrDefault("parameter", new ArrayList<Map<String, Object>>());
 
-            List<Map<String, Object>> fileParts = new ArrayList<>();
-            for (String file : bundleGeneratedFrom) {
-                    fileParts.add(Map.of("name", "file", "valueString", file));
+                    List<Map<String, Object>> fileParts = new ArrayList<>();
+                    for (String file : bundleGeneratedFrom) {
+                            fileParts.add(Map.of("name", "file", "valueString", file));
+                    }
+
+                    parameterList.add(Map.of("name", "validatedFiles", "part", fileParts));
+
+                    parameterList.add(Map.of("name", "initiatedAt", "valueDateTime", initiatedAt.toString()));
+                    parameterList.add(Map.of("name", "completedAt", "valueDateTime", completedAt.toString()));
+
+                    parameterList.add(Map.of("name", "patientMrnId", "valueString", patientMrnId));
+                    parameterList.add(Map.of("name", "encounterId", "valueString", encounterId));
+
+                    List<Map<String, Object>> codingParts = new ArrayList<>();
+                    codingParts.add(Map.of("name", "system", "valueString", "generator"));
+                    codingParts.add(Map.of("name", "display", "valueString", "TechByDesign"));
+
+                    List<Map<String, Object>> whoParts = new ArrayList<>();
+                    whoParts.add(Map.of("name", "coding", "part", codingParts));
+
+                    Map<String, Object> agentPart = Map.of("name", "agent", "part",
+                                    List.of(Map.of("name", "who", "part", whoParts)));
+
+                    parameterList.add(agentPart);
+
+                    parameters.put("parameter", parameterList);
+
+            } else { // start new map if we dont have existing provenance.
+                    parameters.put("resourceType", "Parameters");
+                    List<Map<String, Object>> parameterList = new ArrayList<>();
+
+                    parameterList.add(Map.of("name", "description",
+                                    "valueString",
+                                    "Bundle created from provided files for the given patientMrnId and encounterId"));
+
+                    List<Map<String, Object>> fileParts = new ArrayList<>();
+                    for (String file : bundleGeneratedFrom) {
+                            fileParts.add(Map.of("name", "file", "valueString", file));
+                    }
+                    parameterList.add(Map.of("name", "validatedFiles", "part", fileParts));
+
+                    parameterList.add(Map.of("name", "initiatedAt", "valueDateTime", initiatedAt.toString()));
+                    parameterList.add(Map.of("name", "completedAt", "valueDateTime", completedAt.toString()));
+                    parameterList.add(Map.of("name", "patientMrnId", "valueString", patientMrnId));
+                    parameterList.add(Map.of("name", "encounterId", "valueString", encounterId));
+                    List<Map<String, Object>> codingParts = new ArrayList<>();
+                    codingParts.add(Map.of("name", "system", "valueString", "generator"));
+                    codingParts.add(Map.of("name", "display", "valueString", "TechByDesign"));
+
+                    List<Map<String, Object>> whoParts = new ArrayList<>();
+                    whoParts.add(Map.of("name", "coding", "part", codingParts));
+
+                    Map<String, Object> agentPart = Map.of("name", "agent", "part",
+                                    List.of(Map.of("name", "who", "part", whoParts)));
+                    parameterList.add(agentPart);
+
+                    parameters.put("parameter", parameterList);
+
             }
-            parameterList.add(Map.of("name", "validatedFiles", "part", fileParts));
-
-            parameterList.add(Map.of("name", "initiatedAt", "valueDateTime", initiatedAt.toString()));
-            parameterList.add(Map.of("name", "completedAt", "valueDateTime", completedAt.toString()));
-
-            parameterList.add(Map.of("name", "patientMrnId", "valueString", patientMrnId));
-            parameterList.add(Map.of("name", "encounterId", "valueString", encounterId));
-
-            List<Map<String, Object>> codingParts = new ArrayList<>();
-            codingParts.add(Map.of("name", "system", "valueString", "generator"));
-            codingParts.add(Map.of("name", "display", "valueString", "TechByDesign"));
-
-            List<Map<String, Object>> whoParts = new ArrayList<>();
-            whoParts.add(Map.of("name", "coding", "part", codingParts));
-
-            Map<String, Object> agentPart = Map.of("name", "agent", "part",
-                            List.of(Map.of("name", "who", "part", whoParts)));
-            parameterList.add(agentPart);
-
-            parameters.put("parameter", parameterList);
 
             return Configuration.objectMapper.writeValueAsString(parameters);
     }
