@@ -170,9 +170,7 @@ public class CsvBundleProcessorService {
                     throws Exception {
 
             Map<String, Object> parameters = new HashMap<>();
-
-            // If there's existing provenance, use it as base for adding new fields,
-            // otherwise add minimal skeleton
+            
             if (existingProvenance != null && !existingProvenance.isEmpty()) {
                     parameters = new HashMap<>(existingProvenance); // use a copy here to avoid modifying passed-in obj
                                                                     // directly
