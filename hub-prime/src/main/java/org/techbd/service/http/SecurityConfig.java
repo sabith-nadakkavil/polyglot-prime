@@ -1,6 +1,8 @@
 package org.techbd.service.http;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +22,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -42,6 +46,18 @@ public class SecurityConfig {
 
     @Value("${TECHBD_HUB_PRIME_FHIR_UI_BASE_URL:#{null}}")
     private String uiUrl;
+
+    @Value("${TECHBD_ALLOWED_ORIGIN:#{null}}")
+    private String allowedOriginsString;
+
+    private List<String> allowedOrigins;
+
+    @PostConstruct
+    private void init() {
+        allowedOrigins = Arrays.asList(allowedOriginsString.split(","));
+        LOG.info("Initialized allowed origins: {}", allowedOrigins);
+        System.out.println("Initialized allowed origins: " + allowedOrigins);
+    }
 
     @Bean
     public SecurityFilterChain statelessSecurityFilterChain(final HttpSecurity http) throws Exception {
@@ -94,18 +110,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
-        // primarily setup for Swagger UI and OpenAPI integration
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*"); // Customize as needed
-        config.addAllowedMethod("*");
+        if (!allowedOriginsString.isEmpty()) {
+            Arrays.asList(allowedOriginsString.split(",")).forEach(config::addAllowedOriginPattern);
+        }
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.addAllowedHeader("*");
-        // Expose Location header for session time out redirection at the UI side (AGGrid etc)
         config.addExposedHeader("Location");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        return source;
     }
+
+    @Bean
+    public CorsFilter corsFilter(CorsConfigurationSource corsConfigurationSource) {
+        return new CorsFilter(corsConfigurationSource);
+    }
+
 
     @Bean
     ForwardedHeaderFilter forwardedHeaderFilter() {
