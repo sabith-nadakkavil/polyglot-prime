@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <script src='https://unpkg.com/htmx.org/dist/htmx.min.js'></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Welcome</title>
+    <style>
+        .hanging-indent {
+            padding-left: 1.5rem;
+            text-indent: -1.5rem;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f3f4f6; /* Tailwind's bg-gray-100 */
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            width: 100%;
+            max-width: 72rem; /* Tailwind's max-w-9xl */
+        }
+
+        .prose {
+            background-color: white;
+            padding: 2rem;
+            width: 100%;
+            max-width: 48rem; /* Tailwind's max-w-6xl */
+            text-align: center;
+        }
+
+        img {
+            margin-bottom: 1rem;
+            height: auto;
+            max-width: 20rem; /* Tailwind's max-w-xs */
+        }
+
+        h1, h2 {
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content" class="content-container">
+        <img src="/tech-by-design_full-color.svg" class="mb-4" />
+        <div class="prose">
+            <h1 class="text-3xl">Tech by Design</h1>
+            <h2 class="text-3xl">An error occurred!</h2>
+
+            <!-- <p>Status: <span th:text="${status}"></span></p>
+            <p>Error: <span th:text="${error}"></span></p> -->
+            <p>Message: <span th:text="${message}"></span></p>
+        </div>
+    </div>
+</body>
+
+</html>
