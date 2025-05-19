@@ -98,4 +98,11 @@ public class InteractionsController {
     public String user(final Model model, final HttpServletRequest request) {
         return presentation.populateModel("page/interactions/user", model, request);
     }
+
+    @GetMapping("/interactions/inventory")
+    @RouteMapping(label = "Metadata Report", title = "Metadata", siblingOrder = 120)
+    public String metadata(final Model model, final HttpServletRequest request) {
+        return presentation.populateModel("page/interactions/metadata", model, request);
+    }
+
 }

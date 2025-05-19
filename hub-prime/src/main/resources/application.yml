@@ -212,3 +212,10 @@ management:
         stream-name: ${TECHBD_OPEN_OBSERVE_STREAM_NAME}-traces
         service: 
           name: default
+athena:
+  database: nexus_test_athena_db
+  outputLocation: s3://nexus-test-s3-inventory-report-output/nexus-test-s3-inventory-report/nexus-test-s3-inventory-report/temp-result/
+  inventory:
+    table: s3_inventory_parquet_simple
+  metadata:
+    table: json_metadata_raw

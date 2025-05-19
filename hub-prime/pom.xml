@@ -16,6 +16,7 @@
 	<description>Tech by Design Hub (Primary)</description>
 	<properties>
 		<java.version>21</java.version>
+		<maven.compiler.parameters>true</maven.compiler.parameters>
 	</properties>
 	<distributionManagement>
 		<site>
@@ -291,6 +292,11 @@
 			<version>2.9.0</version>
 		</dependency>
 		<dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>athena</artifactId>
+            <version>2.25.0</version>
+        </dependency>
+		<dependency>
     		<groupId>software.amazon.awssdk</groupId>
     		<artifactId>secretsmanager</artifactId>
     		<version>2.17.87</version>
@@ -345,6 +351,16 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.10.0</version>
+		</dependency>
+		<dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>2.21.1</version>
+        </dependency>
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+			<version>2.0.5</version>
 		</dependency>
 	</dependencies>
 

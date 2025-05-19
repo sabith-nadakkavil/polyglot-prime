@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory metadata report</title>
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.5/dist/ag-grid-community.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" rel="stylesheet" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    .container {
+      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    .description {
+      margin-bottom: 15px;
+      font-size: 1rem;
+      color: #333;
+    }
+    .ag-theme-alpine {
+      height: calc(100% - 80px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Inventory metadata report</h1>
+    <div class="description">
+      This table displays metadata for objects stored in AWS S3. Each row represents a single object, showing details such as the file name, size, content type, last modified date, and storage class. Use the filters and sort options to quickly locate specific files or analyze storage usage.
+    </div>
+    <div id="myGrid" class="ag-theme-alpine"></div>
+  </div>
+
+  <script>
+    const columnDefs = [
+      { field: "bucket", headerName: "Bucket"   },
+      { field: "key", headerName: "Key" },
+      { field: "interactionId", headerName: "Interaction Id"  },
+      { field: "fileName", headerName: "File Name"  },
+      { field: "msgType", headerName: "Message Type"  },
+      { field: "uploadDate", headerName: "Upload Date"  },
+      { field: "fileSize", headerName: "File Size"  },
+      { field: "sourceSystem", headerName: "Source System"  },
+      { field: "s3ObjectPath", headerName: "S3 Object Path"  },
+      { field: "tenantId", headerName: "Tenant Id"  },
+      { field: "timestamp", headerName: "Time Stamp"  },
+      { field: "versionId", headerName: "Version ID"  },
+      { field: "isLatest", headerName: "Is Latest"  },
+      { field: "isDeleteMarker", headerName: "Is Delete Marker"  },
+      { field: "size", headerName: "Size (Bytes)"  },
+      { field: "lastModifiedDate", headerName: "Last Modified Date"  },
+      { field: "eTag", headerName: "ETag"  },
+      { field: "storageClass", headerName: "Storage Class"  },
+      { field: "encryptionStatus", headerName: "Encryption Status"  },
+      { field: "objectLockRetainUntilDate", headerName: "Object Lock Retain Until Date"  },
+      { field: "objectLockMode", headerName: "Object Lock Mode"  },
+      { field: "objectLockLegalHoldStatus", headerName: "Object Lock Legal Hold Status"  },
+      { field: "intelligentTieringAccessTier", headerName: "Intelligent Tiering Access Tier" }
+    ];
+
+    const gridOptions = {
+      columnDefs,
+      rowData: null,
+      defaultColDef: {
+        flex: 1,
+        minWidth: 150,
+        resizable: true,
+        sortable: true,
+        filter: true
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const eGridDiv = document.querySelector('#myGrid');
+      new agGrid.Grid(eGridDiv, gridOptions);
+
+      fetch('/api/inventory')
+        .then(response => response.json())
+        .then(data => {
+          gridOptions.api.setRowData(data);
+        });
+    });
+  </script>
+
+</body>
+</html>
