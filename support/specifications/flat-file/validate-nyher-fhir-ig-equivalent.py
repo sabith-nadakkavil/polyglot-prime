@@ -5,7 +5,6 @@ import os
 from frictionless import Package, transform, steps, extract, Check, errors, Checklist, Resource, Pipeline
 from datetime import datetime, date
 import re  # Import required for regular expression handling
-import calendar  # Import for leap year checking
 import difflib  # For finding close matches between schema and CSV headers
 import gc  # Garbage collection for memory optimization
 
@@ -145,30 +144,13 @@ class ValidateLeapYearDates(Check):
     def _is_valid_date(self, date_str):
         """Validate date string (YYYY-MM-DD) with proper leap year checking"""
         try:
-            # Parse the date string
-            year, month, day = map(int, date_str.split('-'))
-
-            # Check basic ranges
-            if year < 1900 or year > 2100:  # Reasonable year range
+            # Parse and validate using datetime
+            parsed_date = date.fromisoformat(date_str)
+            # Check reasonable year range
+            if parsed_date.year < 1900 or parsed_date.year > 2100:
                 return False
-            if month < 1 or month > 12:
-                return False
-            if day < 1:
-                return False
-
-            # Check days in month with leap year consideration
-            if month in [1, 3, 5, 7, 8, 10, 12]:  # 31-day months
-                return day <= 31
-            elif month in [4, 6, 9, 11]:  # 30-day months
-                return day <= 30
-            elif month == 2:  # February
-                if calendar.isleap(year):
-                    return day <= 29  # Leap year
-                else:
-                    return day <= 28  # Non-leap year
-
-            return False
-        except (ValueError, IndexError):
+            return True
+        except ValueError:
             return False
 
 
@@ -371,89 +353,10 @@ def validate_package(spec_path, file1, file2, file3, file4, output_path):
                 break
             ##########################
 
-        # Transform and validate
-        # common_transform_steps = [ 
-            # ("ORGANIZATION_TYPE_CODE", "organization_type_code"), 
-            # ("ORGANIZATION_TYPE_CODE_SYSTEM", "organization_type_code_system"), 
-            # ("FACILITY_STATE", "facility_state"),
-            # ("ENCOUNTER_CLASS_CODE", "encounter_class_code"),             
-            # ("ENCOUNTER_CLASS_CODE_SYSTEM", "encounter_class_code_system"),
-            # ("ENCOUNTER_STATUS_CODE", "encounter_status_code"),            
-            # ("ENCOUNTER_STATUS_CODE_SYSTEM", "encounter_status_code_system"),            
-            # ("ENCOUNTER_TYPE_CODE_SYSTEM", "encounter_type_code_system"),
-            # ("CONSENT_STATUS", "consent_status"),
-            # ("SCREENING_STATUS_CODE", "screening_status_code"),            
-            # ("SCREENING_STATUS_CODE_SYSTEM", "screening_status_code_system"),
-            # ("SCREENING_LANGUAGE_CODE", "screening_language_code"),            
-            # ("SCREENING_LANGUAGE_CODE_SYSTEM", "screening_language_code_system"),
-            # ("SCREENING_ENTITY_ID_CODE_SYSTEM", "screening_entity_id_code_system"),
-            # ("SCREENING_CODE", "screening_code"),            
-            # ("SCREENING_CODE_SYSTEM", "screening_code_system"),            
-            # ("QUESTION_CODE_SYSTEM", "question_code_system"),
-            # ("ANSWER_CODE", "answer_code"),            
-            # ("ANSWER_CODE_SYSTEM", "answer_code_system"), 
-            # ("OBSERVATION_CATEGORY_SDOH_CODE", "observation_category_sdoh_code"),              
-            # ("DATA_ABSENT_REASON_CODE", "data_absent_reason_code"),            
-            # ("POTENTIAL_NEED_INDICATED", "potential_need_indicated"),
-            # ("ADMINISTRATIVE_SEX_CODE", "administrative_sex_code"),             
-            # ("ADMINISTRATIVE_SEX_CODE_SYSTEM", "administrative_sex_code_system"),
-            # ("SEX_AT_BIRTH_CODE", "sex_at_birth_code"),            
-            # ("SEX_AT_BIRTH_CODE_SYSTEM", "sex_at_birth_code_system"),
-            # ("STATE", "state"),  
-            # ("TELECOM_USE", "telecom_use"), 
-            # ("RACE_CODE", "RACE_CODE"),       
-            # ("RACE_CODE_SYSTEM", "race_code_system"),  
-            # ("ETHNICITY_CODE", "ethnicity_code"),          
-            # ("ETHNICITY_CODE_SYSTEM", "ethnicity_code_system"),
-            # ("PERSONAL_PRONOUNS_CODE", "personal_pronouns_code"),            
-            # ("PERSONAL_PRONOUNS_SYSTEM", "personal_pronouns_system"),
-            # ("GENDER_IDENTITY_CODE", "gender_identity_code"),            
-            # ("GENDER_IDENTITY_CODE_SYSTEM", "gender_identity_code_system"),
-            # ("PREFERRED_LANGUAGE_CODE", "preferred_language_code"),            
-            # ("PREFERRED_LANGUAGE_CODE_SYSTEM", "preferred_language_code_system"), 
-            # ("SEXUAL_ORIENTATION_CODE", "sexual_orientation_code"),            
-            # ("SEXUAL_ORIENTATION_CODE_SYSTEM", "sexual_orientation_code_system")            
-        # ]
-
-        # Track errors to avoid duplicates
-        # seen_errors = set()
-
-        # for resource in package.resources:
-        #     try:
-        #         # Create transform steps only for fields that exist in the current resource
-        #         transform_steps = [
-        #             steps.cell_convert(field_name=field_name, function=lambda value: value.lower())
-        #             for field_name, _ in common_transform_steps
-        #             if any(field.name == field_name for field in resource.schema.fields)
-        #         ]
-        #         resource = transform(resource, steps=transform_steps)
-        #     except Exception as e:
-        #         file_in_error_path = getattr(resource, "path", None)  # or resource.name, depending on your library
-        #         file_in_error = os.path.basename(file_in_error_path) if file_in_error_path else None
-        #         error_message = str(e)
-        #         # Extract missing field name as before
-        #         match = re.search(r"'(.*?)'", error_message)
-        #         missing_field = match.group(1) if match else "Unknown field"
-
-        #         # Create a unique key for this error to avoid duplicates
-        #         error_key = (missing_field)
-
-        #         if error_key not in seen_errors:
-        #             seen_errors.add(error_key)
-        #             file_info = f" in file '{file_in_error}'" if file_in_error else ""
-        #             user_friendly_message = (
-        #                 f"The field '{missing_field}' is missing or incorrectly named in the dataset. "
-        #                 f"Please check if it exists in the CSV file and matches the expected schema."
-        #             )
-        #             results["errorsSummary"].append({
-        #                 "fieldName": missing_field,
-        #                 "message": user_friendly_message,
-        #                 "type": "data-processing-errors"
-        #             })
-       
+         
 
         # Create checklist with only detected flag fields
-        checks = [ValidateAnswerCode(), ValidatePotentialNeedIndicated()]
+        checks = [ValidateAnswerCode(), ValidatePotentialNeedIndicated(), ValidateLeapYearDates()]
 
         # Only add flag validation if flag fields were detected
         # if detected_flag_fields:
