@@ -2,14 +2,35 @@
   <id>ebf6c718-f2dd-415c-9e24-3852cb49577a</id>
   <nextMetaDataId>4</nextMetaDataId>
   <name>FhirBundlleSubmission</name>
-  <description>Version: 0.8.23
-Remove Processing agent in Forward HTTP Response in FhirSubmission.</description>
-  <revision>4</revision>
+  <description>Version: 0.8.24
+Updated FHIR Bundle channel to use register_interaction_fhir_request as per latest DB changes.</description>
+  <revision>7</revision>
   <sourceConnector version="4.6.1">
     <metaDataId>0</metaDataId>
     <name>sourceConnector</name>
     <properties class="com.mirth.connect.connectors.http.HttpReceiverProperties" version="4.6.1">
       <pluginProperties>
+        <com.mirth.connect.plugins.ssl.SSLSettingsProperties version="4.6.1">
+  <sslEnabled>false</sslEnabled>
+          <mutualTlsEnabled>false</mutualTlsEnabled>
+          <verifyHostname>false</verifyHostname>
+          <keystorePath/>
+          <keystorePassword/>
+          <certAlias/>
+          <certPassword/>
+          <truststorePath/>
+          <truststorePassword/>
+          <tls13>true</tls13>
+          <tls12>true</tls12>
+          <tls11>true</tls11>
+          <keystoreType/>
+          <truststoreType/>
+          <keystoreSettingFromSystem>false</keystoreSettingFromSystem>
+          <keystoreUid/>
+          <myCertificateAlias/>
+          <truststoreSettingFromSystem>false</truststoreSettingFromSystem>
+          <truststoreUid/>
+        </com.mirth.connect.plugins.ssl.SSLSettingsProperties>
         <com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties version="4.6.1">
   <authType>NONE</authType>
         </com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties>
@@ -643,7 +664,29 @@ function notFound() {
       <metaDataId>1</metaDataId>
       <name>dest_bundle</name>
       <properties class="com.mirth.connect.connectors.http.HttpDispatcherProperties" version="4.6.1">
-        <pluginProperties/>
+        <pluginProperties>
+          <com.mirth.connect.plugins.ssl.SSLSettingsProperties version="4.6.1">
+  <sslEnabled>false</sslEnabled>
+            <mutualTlsEnabled>false</mutualTlsEnabled>
+            <verifyHostname>false</verifyHostname>
+            <keystorePath/>
+            <keystorePassword/>
+            <certAlias/>
+            <certPassword/>
+            <truststorePath/>
+            <truststorePassword/>
+            <tls13>true</tls13>
+            <tls12>true</tls12>
+            <tls11>true</tls11>
+            <keystoreType/>
+            <truststoreType/>
+            <keystoreSettingFromSystem>false</keystoreSettingFromSystem>
+            <keystoreUid/>
+            <myCertificateAlias/>
+            <truststoreSettingFromSystem>false</truststoreSettingFromSystem>
+            <truststoreUid/>
+          </com.mirth.connect.plugins.ssl.SSLSettingsProperties>
+        </pluginProperties>
         <destinationConnectorProperties version="4.6.1">
           <queueEnabled>false</queueEnabled>
           <sendFirst>false</sendFirst>
@@ -2134,10 +2177,10 @@ function saveFHIRPayload(interactionId, tenantId, requestUri, payloadJson, opera
 &#xd;
 	    logger.info(&quot;[CHANNEL: 1115 TECHBD &quot; + channelName + &quot;][INTERACTION ID: &quot; +interactionId +&quot; ]: Database connection established successfully.&quot;);&#xd;
 	&#xd;
-		var sql = &quot;select techbd_udi_ingress.register_interaction_fhir_request(?::text,?::text,?::jsonb,?::jsonb,?::text,?::jsonb,?::text,?::jsonb,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?,?::text,?,?::text,?::text,?::text,?::text,?::text,?::text,?::text)&quot;;
+		//var sql = &quot;select techbd_udi_ingress.register_interaction_fhir_request(?::text,?::text,?::jsonb,?::jsonb,?::text,?::jsonb,?::text,?::jsonb,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?,?::text,?,?::text,?::text,?::text,?::text,?::text,?::text,?::text)&quot;;
 		var sql =
 		  &quot;select techbd_udi_ingress.register_interaction_fhir_request(&quot; +
-		  &quot;?::text, ?::text, ?::jsonb, ?::jsonb, ?::text, ?::text, ?::text, ?::jsonb, &quot; +
+		  &quot;?::text, ?::text, ?::jsonb, ?::jsonb, ?::text, ?::text, ?::jsonb, &quot; +
 		  &quot;?::text, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text, ?::text, &quot; +
 		  &quot;?::timestamptz, ?::text, ?::boolean, ?::text, ?::text, ?::text, ?::text, ?::text, ?::jsonb, ?::text&quot; +
 		  &quot;)&quot;;
@@ -2171,57 +2214,57 @@ function saveFHIRPayload(interactionId, tenantId, requestUri, payloadJson, opera
 		  stmt.setObject(4, payloadJson, java.sql.Types.OTHER);
 		}
 		
-		// 5. p_hub_nexus_interaction_id text
+//		// 5. p_hub_nexus_interaction_id text
+//		stmt.setNull(5, java.sql.Types.VARCHAR);
+		
+		// 5. p_payload_text text (if you want to store as raw text) — choose either text or null
+		// If you don&apos;t want to store text version, leave NULL:
 		stmt.setNull(5, java.sql.Types.VARCHAR);
 		
-		// 6. p_payload_text text (if you want to store as raw text) — choose either text or null
-		// If you don&apos;t want to store text version, leave NULL:
+		// 6. p_rule_namespace text
 		stmt.setNull(6, java.sql.Types.VARCHAR);
 		
-		// 7. p_rule_namespace text
-		stmt.setNull(7, java.sql.Types.VARCHAR);
+		// 7. p_elaboration jsonb
+		stmt.setNull(7, java.sql.Types.OTHER);
 		
-		// 8. p_elaboration jsonb
-		stmt.setNull(8, java.sql.Types.OTHER);
+		// 8. p_content_type text
+		stmt.setNull(8, java.sql.Types.VARCHAR);
 		
-		// 9. p_content_type text
-		stmt.setNull(9, java.sql.Types.VARCHAR);
-		
-		// 10. p_from_state text  (you were setting these earlier to &quot;DISPOSITION&quot;/&quot;FORWARD&quot;, etc.)
+		// 9. p_from_state text  (you were setting these earlier to &quot;DISPOSITION&quot;/&quot;FORWARD&quot;, etc.)
 		if (operation === &quot;saveForwardFHIRPayload&quot;) {
-		  stmt.setString(10, &quot;DISPOSITION&quot;);
-		  stmt.setString(11, &quot;FORWARD&quot;);
+		  stmt.setString(9, &quot;DISPOSITION&quot;);
+		  stmt.setString(10, &quot;FORWARD&quot;);
 		} else if (operation === &quot;saveForwardFHIRSuccess&quot;) {
-		  stmt.setString(10, &quot;FORWARD&quot;);
-		  stmt.setString(11, &quot;COMPLETE&quot;);
+		  stmt.setString(9, &quot;FORWARD&quot;);
+		  stmt.setString(10, &quot;COMPLETE&quot;);
 		} else if (operation === &quot;saveForwardFHIRFailure&quot;) {
-		  stmt.setString(10, &quot;FORWARD&quot;);
-		  stmt.setString(11, &quot;FAIL&quot;);
+		  stmt.setString(9, &quot;FORWARD&quot;);
+		  stmt.setString(10, &quot;FAIL&quot;);
 		} else {
+		  stmt.setNull(9, java.sql.Types.VARCHAR);
 		  stmt.setNull(10, java.sql.Types.VARCHAR);
-		  stmt.setNull(11, java.sql.Types.VARCHAR);
 		}
 		
-		// 12. p_state_transition_reason
+		// 11. p_state_transition_reason
+		stmt.setNull(11, java.sql.Types.VARCHAR);
+		
+		// 12. p_user_id
 		stmt.setNull(12, java.sql.Types.VARCHAR);
 		
-		// 13. p_user_id
+		// 13. p_user_name
 		stmt.setNull(13, java.sql.Types.VARCHAR);
 		
-		// 14. p_user_name
+		// 14. p_user_session
 		stmt.setNull(14, java.sql.Types.VARCHAR);
 		
-		// 15. p_user_session
+		// 15. p_user_role
 		stmt.setNull(15, java.sql.Types.VARCHAR);
 		
-		// 16. p_user_role
+		// 16. p_created_by
 		stmt.setNull(16, java.sql.Types.VARCHAR);
 		
-		// 17. p_created_by
-		stmt.setNull(17, java.sql.Types.VARCHAR);
-		
-		// 18. p_created_at (timestamp with time zone)
-		stmt.setNull(18, java.sql.Types.TIMESTAMP_WITH_TIMEZONE); // java.sql.Types.TIMESTAMP_WITH_TIMEZONE
+		// 17. p_created_at (timestamp with time zone)
+		stmt.setNull(17, java.sql.Types.TIMESTAMP_WITH_TIMEZONE); // java.sql.Types.TIMESTAMP_WITH_TIMEZONE
 		
 	
 		var featureEnabled = String(globalMap.get(&quot;ORG_TECHBD_PROCESSING_AGENT_FEATURE_ENABLED&quot;)).toLowerCase() === &quot;true&quot;;
@@ -2248,35 +2291,35 @@ function saveFHIRPayload(interactionId, tenantId, requestUri, payloadJson, opera
 		if (operation === &quot;saveForwardFHIRPayload&quot;) {
 		    provenanceString += &quot;, processingAgent:&quot; + processingAgentFinal;
 		}
-		// 19. p_provenance
-		stmt.setString(19, provenanceString);
+		// 18. p_provenance
+		stmt.setString(18, provenanceString);
 
-		// 20. p_hub_upsert_behavior boolean
-		stmt.setNull(20, java.sql.Types.BOOLEAN);
+		// 19. p_hub_upsert_behavior boolean
+		stmt.setNull(19, java.sql.Types.BOOLEAN);
 		
-		// 21. p_source_hub_interaction_id
-		stmt.setString(21, masterInteractionId);
+		// 20. p_source_hub_interaction_id
+		stmt.setString(20, masterInteractionId);
 		
-		// 22. p_origin
-		stmt.setNull(22, java.sql.Types.VARCHAR);
+		// 21. p_origin
+		stmt.setNull(21, java.sql.Types.VARCHAR);
 		
-		// 23. p_source_type
-		//stmt.setNull(23, java.sql.Types.VARCHAR);
-		stmt.setString(23, source);
+		// 22. p_source_type
+		//stmt.setNull(22, java.sql.Types.VARCHAR);
+		stmt.setString(22, source);
 		
-		// 24. p_group_hub_interaction_id
+		// 23. p_group_hub_interaction_id
 		var normalizedSource = source ? String(source).trim().toUpperCase() : null;
 		if (normalizedSource === &apos;CSV&apos;){
-			stmt.setString(24, groupInteractionId);
+			stmt.setString(23, groupInteractionId);
 			}
 		else{
-		stmt.setNull(24, java.sql.Types.VARCHAR);
+		stmt.setNull(23, java.sql.Types.VARCHAR);
 		}
 		
-		// 25. p_request_source
-		stmt.setNull(25, java.sql.Types.VARCHAR);
+		// 24. p_request_source
+		stmt.setNull(24, java.sql.Types.VARCHAR);
 		
-		// 26. p_additional_details jsonb
+		// 25. p_additional_details jsonb
 			if (operation === &quot;saveForwardFHIRSuccess&quot; || operation === &quot;saveForwardFHIRFailure&quot;) {	
 			var endTime = java.time.Instant.now();
 			var finishIso;&#xd;
@@ -2287,20 +2330,20 @@ function saveFHIRPayload(interactionId, tenantId, requestUri, payloadJson, opera
 			} else {&#xd;
 			    finishIso = (new Date()).toISOString();&#xd;
 			}
-		//stmt.setNull(26, java.sql.Types.OTHER);
+		//stmt.setNull(25, java.sql.Types.OTHER);
 		
 		var additionalDetailsObj = {&#xd;
 		  request: {&#xd;
 		    &quot;X-Observability-Metric-Interaction-Finish-Time&quot;: finishIso&#xd;
 		  }&#xd;
 		};
-		stmt.setObject(26, toJsonb(additionalDetailsObj), java.sql.Types.OTHER);
+		stmt.setObject(25, toJsonb(additionalDetailsObj), java.sql.Types.OTHER);
 		} else{
-		stmt.setNull(26, java.sql.Types.OTHER);
+		stmt.setNull(25, java.sql.Types.OTHER);
 		}
 		
-		// 27. p_techbd_version_number text
-		stmt.setNull(27, java.sql.Types.VARCHAR);
+		// 26. p_techbd_version_number text
+		stmt.setNull(26, java.sql.Types.VARCHAR);
 		
 		// execute
 		var result = stmt.execute();
@@ -2442,24 +2485,24 @@ return;</undeployScript>
     <metadata>
       <enabled>true</enabled>
       <lastModified>
-        <time>1774338744354</time>
+        <time>1775031878365</time>
         <timezone>Asia/Calcutta</timezone>
       </lastModified>
       <pruningSettings>
         <archiveEnabled>true</archiveEnabled>
         <pruneErroredMessages>false</pruneErroredMessages>
       </pruningSettings>
-      <userId>1</userId>
+      <userId>10</userId>
     </metadata>
     <channelTags>
       <channelTag>
-        <id>ca7a3b13-ac50-4b37-9f7a-ecc1a028a372</id>
-        <name>0_8_23</name>
+        <id>3eadcde6-b322-4023-b963-ff86264ce4b2</id>
+        <name>0_8_24</name>
         <channelIds>
           <string>ebf6c718-f2dd-415c-9e24-3852cb49577a</string>
         </channelIds>
         <backgroundColor>
-          <red>255</red>
+          <red>128</red>
           <green>0</green>
           <blue>0</blue>
           <alpha>255</alpha>
