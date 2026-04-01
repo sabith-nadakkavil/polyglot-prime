@@ -298,7 +298,7 @@ def validate_package(spec_path, file1, file2, file3, file4, output_path):
         detected_flag_fields = []
 
         for i, resource in enumerate(package.resources):
-            if resource.name == "qe_admin_data":
+            if resource.name == "screening_profile_data":
                 # print(f"\n🔍 Checking flag fields in {resource.name}")
                 try:
                     # Read the CSV header to see what fields are actually present
