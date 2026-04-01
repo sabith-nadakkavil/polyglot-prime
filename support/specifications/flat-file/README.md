@@ -55,7 +55,7 @@ This section outlines the location of key files and their purpose within the pro
 - **`support/specifications/flat-file`**
   - `datapackage-nyher-fhir-ig-equivalent.json`: Schema specification for validating CSV files.
   - `validate-nyher-fhir-ig-equivalent.py`: Python script to validate CSV files against the schema.
-  - **`1115_SDOH.Template_v6_02092026.xlsx`**: **Excel file that defines the structure, required fields, rules, and field-level data references for creating all related CSV files.**  
+  - **`1115_SDOH.Template_v6_03172026.xlsx`**: **Excel file that defines the structure, required fields, rules, and field-level data references for creating all related CSV files.**  
 - **`nyher-fhir-ig-example/`**: Folder containing sample CSV files for validation.
   - `SDOH_PtInfo_CareRidgeSCN_testcase1_20250312040214.csv `: Demographic information data.
   - `SDOH_QEadmin_CareRidgeSCN_testcase1_20250312040214.csv`: QE administration data.

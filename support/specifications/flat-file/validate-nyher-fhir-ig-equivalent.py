@@ -120,7 +120,7 @@ class ValidateLeapYearDates(Check):
         for field_name in self.DATETIME_FIELDS:
             field_value = row.get(field_name)
             if field_value and not self._is_valid_datetime(field_value):
-                note = f"Invalid date in '{field_name}': '{field_value}'. Date does not exist (check leap year, month days)."
+                note = f"Invalid date in '{field_name}': '{field_value}'. The date is not valid. Please verify the day, month, and year (including leap year rules)."
                 yield errors.RowError.from_row(row, note=note)
 
         # Check date fields (YYYY-MM-DD format) already checked in frictionless patten
