@@ -82,17 +82,17 @@ function saveHL7Payload(interactionId, tenantId, requestUri, payloadJson, operat
 		    throw errorMessage; // Stop further processing by throwing an exception
 		}
 
-	    // Database connection details
+	     // Database connection details
 		var dbUrl = globalMap.get(&apos;jdbcUrl&apos;);
 		var dbUser = globalMap.get(&apos;jdbcUsername&apos;);
 		var dbPassword = globalMap.get(&apos;jdbcPassword&apos;);
 
 		//Devl
-	    conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-	    logger.info(&quot;Database connection established successfully.&quot;);
+	     conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+	     logger.info(&quot;Database connection established successfully.&quot;);
 	
 		var sql = &quot;select techbd_udi_ingress.register_interaction_hl7_request(?::text,?::text,?::jsonb,?::text,?::text,?::jsonb,?::text,?::text,?::jsonb,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?,?::text,?,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text)&quot;;
-	    stmt = conn.prepareCall(sql);
+	     stmt = conn.prepareCall(sql);
 
 		stmt.setString(1, interactionId);
 		stmt.setString(2, requestUri);		

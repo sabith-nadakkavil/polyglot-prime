@@ -2,8 +2,8 @@
   <id>0cefb37a-ca0a-48cc-85a1-aa0b727d26a2</id>
   <nextMetaDataId>12</nextMetaDataId>
   <name>TechBD CCD Workflow</name>
-  <description>Version: 0.4.43</description>
-  <revision>57</revision>
+  <description>Version: 0.4.44</description>
+  <revision>58</revision>
   <sourceConnector version="4.5.0">
     <metaDataId>0</metaDataId>
     <name>sourceConnector</name>
@@ -89,7 +89,6 @@ function toJsonb(value) {
     }
     
     jsonbObj.setValue(value);
-    logger.info(&quot;jsonbObj: &quot; + jsonbObj);
     return jsonbObj;
 }
 
@@ -126,10 +125,9 @@ function saveCcdaPayload(interactionId, tenantId, requestUri, payloadJson, opera
 
 		//Devl
 	    conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-
 	    logger.info(&quot;Database connection established successfully.&quot;);
-	
-		var sql = &quot;select techbd_udi_ingress.register_interaction_ccda_request(?::text,?::text,?::jsonb,?::text,?::text,?::text,?::jsonb,?::text,?::text,?::jsonb,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?,?::text,?,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text)&quot;;
+		
+		var sql = &quot;select techbd_udi_ingress.register_interaction_ccda_request(?::text,?::text,?::jsonb,?::text,?::text,?::jsonb,?::text,?::text,?::jsonb,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?,?::text,?,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text,?::text)&quot;;
 	    stmt = conn.prepareCall(sql);
 
 		stmt.setString(1, interactionId);
@@ -163,31 +161,31 @@ function saveCcdaPayload(interactionId, tenantId, requestUri, payloadJson, opera
 			stmt.setString(4, &quot;CCDA_ACCEPT&quot;);	
 			stmt.setString(5, &quot;VALIDATION_FAILED&quot;);
 		}
-		stmt.setNull(6, java.sql.Types.VARCHAR);
-
+		
 		if(operation === &quot;saveOgCCDAPayload&quot;){
-			stmt.setNull(7, java.sql.Types.OTHER);
+			stmt.setNull(6, java.sql.Types.OTHER);
 		} else {
-			stmt.setObject(7, toJsonb(payloadJson), java.sql.Types.OTHER);	
+			stmt.setObject(6, toJsonb(payloadJson), java.sql.Types.OTHER);	
 		}
 		
 		if(operation == &quot;saveValidationSuccess&quot; || operation == &quot;saveValidationFailed&quot; || operation === &quot;saveConversionSuccess&quot;){
-			stmt.setNull(8, java.sql.Types.OTHER);
+			stmt.setNull(7, java.sql.Types.OTHER);
 		} else {
-			stmt.setString(8, payloadJson);
-		}			
-		stmt.setNull(9, java.sql.Types.VARCHAR);
-		stmt.setNull(10, java.sql.Types.OTHER);
+			stmt.setString(7, payloadJson);
+		}	
+		stmt.setNull(8, java.sql.Types.VARCHAR);		
+		stmt.setNull(9, java.sql.Types.OTHER);
+		stmt.setNull(10, java.sql.Types.VARCHAR);
 		stmt.setNull(11, java.sql.Types.VARCHAR);
 		stmt.setNull(12, java.sql.Types.VARCHAR);
 		stmt.setNull(13, java.sql.Types.VARCHAR);
 		stmt.setNull(14, java.sql.Types.VARCHAR);
 		stmt.setNull(15, java.sql.Types.VARCHAR);
 		stmt.setNull(16, java.sql.Types.VARCHAR);
-		stmt.setNull(17, java.sql.Types.VARCHAR);
-		stmt.setNull(18, java.sql.Types.TIMESTAMP_WITH_TIMEZONE);
-		stmt.setString(19, &quot;CCDA&quot;); //provenance  
-		stmt.setNull(20, java.sql.Types.BOOLEAN);
+		stmt.setNull(17, java.sql.Types.TIMESTAMP_WITH_TIMEZONE);
+		stmt.setString(18, &quot;CCDA&quot;); //provenance  
+		stmt.setNull(19, java.sql.Types.BOOLEAN);
+		stmt.setNull(20, java.sql.Types.VARCHAR);
 		stmt.setNull(21, java.sql.Types.VARCHAR);
 		stmt.setNull(22, java.sql.Types.VARCHAR);
 		stmt.setNull(23, java.sql.Types.VARCHAR);
@@ -195,9 +193,8 @@ function saveCcdaPayload(interactionId, tenantId, requestUri, payloadJson, opera
 		stmt.setNull(25, java.sql.Types.VARCHAR);
 		stmt.setNull(26, java.sql.Types.VARCHAR);
 		stmt.setNull(27, java.sql.Types.VARCHAR);
-		stmt.setNull(28, java.sql.Types.VARCHAR);
-		stmt.setString(29, channelMap.get(&apos;filename&apos;));
-		stmt.setString(30, ccdaAuthoringDevice);
+		stmt.setString(28, channelMap.get(&apos;filename&apos;));
+		stmt.setString(29, ccdaAuthoringDevice);
 
 	    var result = stmt.execute();
 	    logger.info(&quot;Stored procedure executed, result: &quot; + result);
@@ -482,7 +479,7 @@ function extractBoundaries(rawCcdaXml) {
 				    .replace(/^\uFEFF/, &apos;&apos;)      // real BOM
 				    .replace(/^ï»¿/, &apos;&apos;)        // mis-decoded BOM
 				    .trim();		
-		logger.info(&quot;rawXml 2: &quot; + rawXml);		
+		logger.info(&quot;rawXml 2: &quot; + rawXml);
 	        // Extract everything after first blank line
 	        var match = rawXml.match(/\r?\n\r?\n([\s\S]*)/);
 	        if (match &amp;&amp; match[1]) {
@@ -2605,7 +2602,7 @@ return;</undeployScript>
     <metadata>
       <enabled>true</enabled>
       <lastModified>
-        <time>1773745988092</time>
+        <time>1774931688528</time>
         <timezone>Asia/Calcutta</timezone>
       </lastModified>
       <pruningSettings>
