@@ -33,6 +33,39 @@ function toJsonb(value) {
     return jsonbObj;
 }
 
+var jdbcUrl = java.lang.System.getenv(&quot;MC_JDBC_URL&quot;);
+if(jdbcUrl != null) {
+    globalMap.put(&apos;jdbcUrl&apos;, jdbcUrl);
+    //logger.info(&quot;jdbcUrl: &quot; + jdbcUrl);
+} else {
+    var errorMessage = &apos;MC_JDBC_URL variable is not set&apos;;
+    logger.error(errorMessage);
+    setErrorResponse(500, errorMessage); // Set the HTTP response status to 500 (Server error)
+    throw errorMessage; // Stop further processing by throwing an exception
+}
+
+var jdbcUsername = java.lang.System.getenv(&quot;MC_JDBC_USERNAME&quot;);
+if(jdbcUsername != null) {
+    globalMap.put(&apos;jdbcUsername&apos;, jdbcUsername);
+    //logger.info(&quot;jdbcUsername: &quot; + jdbcUsername);
+} else {
+    var errorMessage = &apos;MC_JDBC_USERNAME variable is not set&apos;;
+    logger.error(errorMessage);
+    setErrorResponse(500, errorMessage); // Set the HTTP response status to 500 (Server error)
+    throw errorMessage; // Stop further processing by throwing an exception
+}
+
+var jdbcPassword = java.lang.System.getenv(&quot;MC_JDBC_PASSWORD&quot;);
+if(jdbcPassword != null) {
+    globalMap.put(&apos;jdbcPassword&apos;, jdbcPassword);
+    //logger.info(&quot;jdbcPassword: &quot; + jdbcPassword);
+} else {
+    var errorMessage = &apos;MC_JDBC_PASSWORD variable is not set&apos;;
+    logger.error(errorMessage);
+    setErrorResponse(500, errorMessage); // Set the HTTP response status to 500 (Server error)
+    throw errorMessage; // Stop further processing by throwing an exception
+}
+
 
 function saveHL7Payload(interactionId, tenantId, requestUri, payloadJson, operation) {
 	
@@ -47,40 +80,7 @@ function saveHL7Payload(interactionId, tenantId, requestUri, payloadJson, operat
 	var stmt = null;
 	
 	try {
-	    logger.info(&quot;Inside DB Try&quot;);
-
-	    var jdbcUrl = java.lang.System.getenv(&quot;MC_JDBC_URL&quot;);
-		if(jdbcUrl != null) {
-		    globalMap.put(&apos;jdbcUrl&apos;, jdbcUrl);
-		    //logger.info(&quot;jdbcUrl: &quot; + jdbcUrl);
-		} else {
-		    var errorMessage = &apos;MC_JDBC_URL variable is not set&apos;;
-		    logger.error(errorMessage);
-		    setErrorResponse(500, errorMessage); // Set the HTTP response status to 500 (Server error)
-		    throw errorMessage; // Stop further processing by throwing an exception
-		}
-		
-		var jdbcUsername = java.lang.System.getenv(&quot;MC_JDBC_USERNAME&quot;);
-		if(jdbcUsername != null) {
-		    globalMap.put(&apos;jdbcUsername&apos;, jdbcUsername);
-		    //logger.info(&quot;jdbcUsername: &quot; + jdbcUsername);
-		} else {
-		    var errorMessage = &apos;MC_JDBC_USERNAME variable is not set&apos;;
-		    logger.error(errorMessage);
-		    setErrorResponse(500, errorMessage); // Set the HTTP response status to 500 (Server error)
-		    throw errorMessage; // Stop further processing by throwing an exception
-		}
-		
-		var jdbcPassword = java.lang.System.getenv(&quot;MC_JDBC_PASSWORD&quot;);
-		if(jdbcPassword != null) {
-		    globalMap.put(&apos;jdbcPassword&apos;, jdbcPassword);
-		    //logger.info(&quot;jdbcPassword: &quot; + jdbcPassword);
-		} else {
-		    var errorMessage = &apos;MC_JDBC_PASSWORD variable is not set&apos;;
-		    logger.error(errorMessage);
-		    setErrorResponse(500, errorMessage); // Set the HTTP response status to 500 (Server error)
-		    throw errorMessage; // Stop further processing by throwing an exception
-		}
+	    logger.info(&quot;Inside DB Try&quot;);	   
 
 	    // Database connection details
 		var dbUrl = globalMap.get(&apos;jdbcUrl&apos;);
