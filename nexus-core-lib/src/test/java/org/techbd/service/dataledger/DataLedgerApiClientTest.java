@@ -21,24 +21,25 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
-import org.techbd.config.CoreAppConfig;
-import org.techbd.service.dataledger.CoreDataLedgerApiClient.Action;
-import org.techbd.service.dataledger.CoreDataLedgerApiClient.Actor;
-import org.techbd.service.dataledger.CoreDataLedgerApiClient.DataLedgerPayload;
-import org.techbd.util.AppLogger;
-import org.techbd.util.TemplateLogger;
+import org.techbd.corelib.config.CoreAppConfig;
+import org.techbd.corelib.service.dataledger.DataLedgerApiClient;
+import org.techbd.corelib.service.dataledger.DataLedgerApiClient.Action;
+import org.techbd.corelib.service.dataledger.DataLedgerApiClient.Actor;
+import org.techbd.corelib.service.dataledger.DataLedgerApiClient.DataLedgerPayload;
+import org.techbd.corelib.util.AppLogger;
+import org.techbd.corelib.util.TemplateLogger;
 
 class DataLedgerApiClientTest {
 
     @Mock
-    private CoreAppConfig coreAppConfig;
+    private CoreAppConfig appConfig;
 
     @Mock
     private DSLContext dslContext;
 
     private static MockedStatic<HttpClient> mockedHttpClient;
     private static HttpClient httpClient;
-    private CoreDataLedgerApiClient coreDataLedgerApiClient;
+    private DataLedgerApiClient coreDataLedgerApiClient;
     private static AppLogger appLogger;
     private static TemplateLogger templateLogger;
 
@@ -48,7 +49,7 @@ class DataLedgerApiClientTest {
         httpClient = mock(HttpClient.class);
         appLogger = mock(AppLogger.class);
         templateLogger = mock(TemplateLogger.class);
-        when(appLogger.getLogger(CoreDataLedgerApiClient.class)).thenReturn(templateLogger);
+        when(appLogger.getLogger(DataLedgerApiClient.class)).thenReturn(templateLogger);
         mockedHttpClient.when(HttpClient::newHttpClient).thenReturn(httpClient);
     }
 
@@ -60,7 +61,7 @@ class DataLedgerApiClientTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        coreDataLedgerApiClient = new CoreDataLedgerApiClient(coreAppConfig,dslContext,appLogger);
+        coreDataLedgerApiClient = new DataLedgerApiClient(appConfig,dslContext,appLogger);
         when(mock(org.jooq.DSLContext.class).configuration()).thenReturn(mock(org.jooq.Configuration.class));
     }
 
@@ -73,10 +74,8 @@ class DataLedgerApiClientTest {
         String interactionId = "testInteractionId";
 
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(true);
-        when(coreAppConfig.isDataLedgerDiagnostics()).thenReturn(true);
-
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
+       
         @SuppressWarnings("unchecked")
         HttpResponse<String> mockResponse = mock(HttpResponse.class);
         when(mockResponse.statusCode()).thenReturn(200);
@@ -86,7 +85,7 @@ class DataLedgerApiClientTest {
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, true);
     }
 
     @Test
@@ -99,9 +98,9 @@ class DataLedgerApiClientTest {
 
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
 
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(true);
-        when(coreAppConfig.isDataLedgerDiagnostics()).thenReturn(true);
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
+        // when(appConfig.isDataLedgerTracking()).thenReturn(true);
+        // when(appConfig.isDataLedgerDiagnostics()).thenReturn(true);
 
         @SuppressWarnings("unchecked")
         HttpResponse<String> mockResponse = mock(HttpResponse.class);
@@ -112,7 +111,7 @@ class DataLedgerApiClientTest {
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, true);
     }
 
     @Test
@@ -122,13 +121,8 @@ class DataLedgerApiClientTest {
         String destination = Actor.TECHBD.getValue();
         String dataId = "testDataId";
         String interactionId = "testInteractionId";
-
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
-
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(true);
-        when(coreAppConfig.isDataLedgerDiagnostics()).thenReturn(true);
-
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
         @SuppressWarnings("unchecked")
         HttpResponse<String> mockResponse = mock(HttpResponse.class);
         when(mockResponse.statusCode()).thenReturn(200);
@@ -138,7 +132,7 @@ class DataLedgerApiClientTest {
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, true);
     }
 
     @Test
@@ -148,23 +142,18 @@ class DataLedgerApiClientTest {
         String destination = "testDestination";
         String dataId = "testDataId";
         String interactionId = "testInteractionId";
-
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
-
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(true);
-        when(coreAppConfig.isDataLedgerDiagnostics()).thenReturn(false);
-
-        @SuppressWarnings("unchecked")
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
+         @SuppressWarnings("unchecked")
         HttpResponse<String> mockResponse = mock(HttpResponse.class);
         when(mockResponse.statusCode()).thenReturn(200);
         when(mockResponse.body()).thenReturn("Success");
-
+        
         CompletableFuture<HttpResponse<String>> mockFuture = CompletableFuture.completedFuture(mockResponse);
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, false);
     }
 
     @Test
@@ -177,9 +166,7 @@ class DataLedgerApiClientTest {
 
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
 
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(false);
-
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
         @SuppressWarnings("unchecked")
         HttpResponse<String> mockResponse = mock(HttpResponse.class);
         when(mockResponse.statusCode()).thenReturn(200);
@@ -189,7 +176,7 @@ class DataLedgerApiClientTest {
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, true);
     }
 
     @Test
@@ -202,10 +189,7 @@ class DataLedgerApiClientTest {
 
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
 
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(true);
-        when(coreAppConfig.isDataLedgerDiagnostics()).thenReturn(true);
-
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
         // Mock failure response
         @SuppressWarnings("unchecked")
         HttpResponse<String> mockResponse = mock(HttpResponse.class);
@@ -216,7 +200,7 @@ class DataLedgerApiClientTest {
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, true);
     }
 
     @Test
@@ -227,17 +211,14 @@ class DataLedgerApiClientTest {
         String dataId = "testDataId";
 
         DataLedgerPayload payload = DataLedgerPayload.create(actor, action, destination, dataId);
-
-        when(coreAppConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
-        when(coreAppConfig.isDataLedgerTracking()).thenReturn(true);
-        when(coreAppConfig.isDataLedgerDiagnostics()).thenReturn(true);
-
+        when(appConfig.getDataLedgerApiUrl()).thenReturn("http://mock-endpoint");
+        
         CompletableFuture<HttpResponse<String>> mockFuture = new CompletableFuture<>();
         mockFuture.completeExceptionally(new IOException("Mocked IOException"));
         when(httpClient.sendAsync(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockFuture);
 
         Map<String, Object> additionalData = new HashMap<>();
-        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData);
+        coreDataLedgerApiClient.processRequest(payload, actor, action, destination, additionalData, true, true);
     }
 
 }

@@ -222,7 +222,7 @@
         </dependency>
         <dependency>
 			<groupId>org.techbd</groupId>
-			<artifactId>core-lib</artifactId>
+			<artifactId>nexus-core-lib</artifactId>
       		<version>${project.version}</version>
 		</dependency>
         <!-- <dependency>

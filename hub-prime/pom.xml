@@ -374,7 +374,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.techbd</groupId>
-			<artifactId>nexus-core-lib</artifactId>
+			<artifactId>hub-core-lib</artifactId>
       <version>${project.version}</version>
 		</dependency>
 	</dependencies>

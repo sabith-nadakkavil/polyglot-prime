@@ -59,7 +59,7 @@ maintainability, and scalability. Here are the key aspects of our strategy:
 │   └── utils/                        # Testing utilities
 │       └── logger-util.ts
 │
-├── core-lib/                         # Shared Java core library for common utilities and components
+├── hub-core-lib/                         # Shared Java core library for common utilities and components
 │   ├── src/
 │   │   ├── main/
 │   │   │   └── java/

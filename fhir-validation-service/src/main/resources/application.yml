@@ -1,14 +1,6 @@
 org:
   techbd:
     version: ${project.version}
-    csv:
-      validation:
-        pythonScriptPath: ${PYTHON_SCRIPT_PATH}support/specifications/flat-file/validate-nyher-fhir-ig-equivalent.py
-        pythonExecutable: python3
-        packagePath: ${PYTHON_SCRIPT_PATH}support/specifications/flat-file/datapackage-nyher-fhir-ig-equivalent.json
-        inboundPath: /app/techbyDesign/flatFile/inbound
-        outputPath: /app/techbyDesign/flatFile/outbound
-        ingressHomePath: /app/techbyDesign/flatFile/ingress
     udi:
       prime:
         jdbc:
@@ -56,27 +48,10 @@ org:
           us-core: ig-packages/fhir-v4/us-core/stu-7.0.0
           sdoh: ig-packages/fhir-v4/sdoh-clinicalcare/stu-2.2.0
           uv-sdc: ig-packages/fhir-v4/uv-sdc/stu-3.0.0
-    baseFHIRURL: http://test.shinny.org/us/ny/hrsn #This is the default FHIR url used in generating FHIR from CSV
+    baseFHIRURL: ${TECHBD_BASE_FHIR_URL} #This is the default FHIR url used in generating FHIR from CSV
     validation-severity-level: error  # Possible values: fatal, error, warning, information
-    structureDefinitionsUrls:
-      bundle: /StructureDefinition/SHINNYBundleProfile
-      patient: /StructureDefinition/shinny-patient
-      consent: /StructureDefinition/shinny-Consent
-      encounter: /StructureDefinition/shinny-encounter
-      organization: /StructureDefinition/shin-ny-organization
-      observation: /StructureDefinition/shinny-observation-screening-response
-      questionnaire: /StructureDefinition/shinny-questionnaire
-      practitioner: /StructureDefinition/shin-ny-practitioner
-      questionnaireResponse: /StructureDefinition/shinny-questionnaire
-      observationSexualOrientation: /StructureDefinition/shinny-observation-sexual-orientation
-      procedure: /StructureDefinition/shinny-sdoh-procedure
     operationOutcomeHelpUrl: "https://techbd.org/get-help/"
-    dataLedgerApiUrl: https://gbp2obo8d0.execute-api.us-east-1.amazonaws.com/development/DataLedger
+    dataLedgerApiUrl: ${TECHBD_DATA_LEDGER_API_URL}
     dataLedgerApiKeySecretName: techbd-nyec-dataledger-api-key
-togglz: 
-  enabled: true 
-  features: 
-    FEATURE_DATA_LEDGER_TRACKING: 
-      enabled: false
-    FEATURE_DATA_LEDGER_DIAGNOSTICS: 
-      enabled: true
+    dataLedgerTracking: ${TECHBD_DATA_LEDGER_TRACKING_ENABLED:false}
+    dataLedgerDiagnostics: ${TECHBD_DATA_LEDGER_DIAGNOSTICS_ENABLED:true}

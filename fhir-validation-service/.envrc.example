@@ -15,3 +15,7 @@ export TECHBD_OPEN_OBSERVE_STREAM_NAME=local
 export TECHBD_ALLOWED_HOSTS=localhost:8080
 export TECHBD_BL_BASEURL=https://synthetic.fhir.api.devl.techbd.org
 export TECHBD_MAVEN_ROOT_DIR=/home/user/.m2
+export TECHBD_DATA_LEDGER_API_URL=https://gbp2obo8d0.execute-api.us-east-1.amazonaws.com/dev/DataLedger
+export TECHBD_DATA_LEDGER_TRACKING_ENABLED=true
+export TECHBD_DATA_LEDGER_DIAGNOSTICS_ENABLED=true
+export TECHBD_BASE_FHIR_URL=http://test.shinny.org/us/ny/hrsn
