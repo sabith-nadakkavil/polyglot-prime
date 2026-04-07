@@ -44,7 +44,7 @@ public class FHIRUtil {
 
     public static String getProfileUrl(String key) {
         if (BASE_FHIR_URL == null) {
-            throw new IllegalStateException("FHIRUtil has not been initialized. Call initialize() first.");
+            throw new IllegalStateException("BASE_FHIR_URL cannot be null");
         }
         return BASE_FHIR_URL + PROFILE_MAP.getOrDefault(key, "");
     }
