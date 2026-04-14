@@ -1,15 +1,18 @@
 <channel version="4.6.1">
-  <id>89e73cf9-ecde-463b-92e9-cc3762eed605</id>
+  <id>01fbb835-f605-4376-84eb-9c4affcf159e</id>
   <nextMetaDataId>3</nextMetaDataId>
   <name>TechBD HL7 Workflow</name>
-  <description>Version: 0.1.32
-Updated the function call in the HL7 channel to align with the latest database changes.</description>
-  <revision>5</revision>
+  <description>Version: 0.1.33
+Added OMH and OPWDD flag handling similar to Part2.</description>
+  <revision>6</revision>
   <sourceConnector version="4.6.1">
     <metaDataId>0</metaDataId>
     <name>sourceConnector</name>
     <properties class="com.mirth.connect.connectors.http.HttpReceiverProperties" version="4.6.1">
       <pluginProperties>
+        <com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties version="4.6.1">
+  <authType>NONE</authType>
+        </com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties>
         <com.mirth.connect.plugins.ssl.SSLSettingsProperties version="4.6.1">
   <sslEnabled>false</sslEnabled>
           <mutualTlsEnabled>false</mutualTlsEnabled>
@@ -31,9 +34,6 @@ Updated the function call in the HL7 channel to align with the latest database c
           <truststoreSettingFromSystem>false</truststoreSettingFromSystem>
           <truststoreUid/>
         </com.mirth.connect.plugins.ssl.SSLSettingsProperties>
-        <com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties version="4.6.1">
-  <authType>NONE</authType>
-        </com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties>
       </pluginProperties>
       <listenerConnectorProperties version="4.6.1">
         <host>0.0.0.0</host>
@@ -77,7 +77,7 @@ Updated the function call in the HL7 channel to align with the latest database c
         <entry>
           <string>Access-Control-Allow-Headers</string>
           <list>
-            <string>Content-Type,Authorization,X-TechBD-Tenant-ID,User-Agent,X-TechBD-REMOTE-IP,X-TechBD-Override-Request-URI,accept,X-TechBD-CIN,X-TechBD-OrgNPI,X-TechBD-OrgTIN,X-TechBD-Base-FHIR-URL,X-TechBD-Validation-Severity-Level,X-TechBD-Facility-ID,X-TechBD-Encounter-Type,X-TechBD-Organization-Name,X-TechBD-Part2</string>
+            <string>Content-Type,Authorization,X-TechBD-Tenant-ID,User-Agent,X-TechBD-REMOTE-IP,X-TechBD-Override-Request-URI,accept,X-TechBD-CIN,X-TechBD-OrgNPI,X-TechBD-OrgTIN,X-TechBD-Base-FHIR-URL,X-TechBD-Validation-Severity-Level,X-TechBD-Facility-ID,X-TechBD-Encounter-Type,X-TechBD-Organization-Name,X-TechBD-Part2,X-TechBD-OPWDD,X-TechBD-OMH</string>
           </list>
         </entry>
         <entry>
@@ -204,6 +204,20 @@ if (requestedPath == &quot;/hl7v2/Bundle/&quot; || requestedPath == &quot;/hl7v2
 	if (part2DataFlag &amp;&amp; String(part2DataFlag).trim() !== &quot;&quot;) {
 	    channelMap.put(&apos;X-TechBD-Part2&apos;, part2DataFlag);
 	}
+	// 7. OMH Flagging
+	var OMHFlag = $(&apos;headers&apos;).getHeader(&apos;X-TechBD-OMH&apos;);
+	logger.info(&quot;X-TechBD-OMH: &quot; + OMHFlag);
+	if (OMHFlag &amp;&amp; String(OMHFlag).trim() !== &quot;&quot;) {
+	    channelMap.put(&apos;X-TechBD-OMH&apos;, OMHFlag);
+	}
+	
+	// 8. OPWDD Flagging
+	var OPWDDFlag = $(&apos;headers&apos;).getHeader(&apos;X-TechBD-OPWDD&apos;);
+	logger.info(&quot;X-TechBD-OPWDD: &quot; + OPWDDFlag);
+	if (OPWDDFlag &amp;&amp; String(OPWDDFlag).trim() !== &quot;&quot;) {
+	    channelMap.put(&apos;X-TechBD-OPWDD&apos;, OPWDDFlag);
+	}
+
 }
 
 // If any missing headers were found, throw a single error
@@ -1290,7 +1304,6 @@ function set_fhir_resource_profile_urls(transformer) {
 	if (channelMap.get(&apos;OrganizationName&apos;)) {
 		transformer.setParameter(&quot;OrganizationName&quot;, channelMap.get(&apos;OrganizationName&apos;)); // Pass the parameter to XSLT
 	}
-///////////////////////////////////////////////////////////////////
 // Set part2 flag
      var part2DataFlag = channelMap.get(&apos;X-TechBD-Part2&apos;);
 	var flagValue = &quot;false&quot;;
@@ -1299,9 +1312,22 @@ function set_fhir_resource_profile_urls(transformer) {
 	}	
 	transformer.setParameter(&apos;X-TechBD-Part2&apos;, flagValue);
 
-//////////////////////////////////////////////////////////////////
+// Set OMH flag
+var omhFlag = channelMap.get(&apos;X-TechBD-OMH&apos;);
+var omhFlagValue = &quot;false&quot;;
+if (omhFlag &amp;&amp; String(omhFlag).toLowerCase() === &quot;true&quot;) {
+    omhFlagValue = &quot;true&quot;;
+}
+transformer.setParameter(&apos;X-TechBD-OMH&apos;, omhFlagValue);
 
-	return transformer;
+// Set OPWDD flag
+var opwddFlag = channelMap.get(&apos;X-TechBD-OPWDD&apos;);
+var opwddFlagValue = &quot;false&quot;;
+if (opwddFlag &amp;&amp; String(opwddFlag).toLowerCase() === &quot;true&quot;) {
+    opwddFlagValue = &quot;true&quot;;
+}
+transformer.setParameter(&apos;X-TechBD-OPWDD&apos;, opwddFlagValue);
+return transformer;
 }
 
 
@@ -3064,7 +3090,7 @@ return;</undeployScript>
     <metadata>
       <enabled>true</enabled>
       <lastModified>
-        <time>1775032816266</time>
+        <time>1776164136396</time>
         <timezone>Asia/Calcutta</timezone>
       </lastModified>
       <pruningSettings>
@@ -3075,14 +3101,14 @@ return;</undeployScript>
     </metadata>
     <channelTags>
       <channelTag>
-        <id>0938fafc-5620-4d1a-a66b-09795891f189</id>
-        <name>0_1_32</name>
+        <id>992de56c-8035-401c-bf39-8066cb52c9eb</id>
+        <name>0_1_33</name>
         <channelIds>
-          <string>89e73cf9-ecde-463b-92e9-cc3762eed605</string>
+          <string>01fbb835-f605-4376-84eb-9c4affcf159e</string>
         </channelIds>
         <backgroundColor>
           <red>255</red>
-          <green>255</green>
+          <green>0</green>
           <blue>0</blue>
           <alpha>255</alpha>
         </backgroundColor>
