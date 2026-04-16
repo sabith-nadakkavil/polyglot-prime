@@ -1,18 +1,15 @@
 <channel version="4.6.1">
-  <id>d34fa745-23b3-4271-b58b-a380f5cf5f0a</id>
+  <id>3322c442-7c6e-46b4-b6d1-f0cff8c4741d</id>
   <nextMetaDataId>12</nextMetaDataId>
   <name>TechBD CCD Workflow</name>
-  <description>Version 0.5.26
-implemented common utility XSLT enhancements for the CCDA channel and updated the function call to register_interaction_ccda_request.</description>
-  <revision>19</revision>
+  <description>Version 0.5.27
+update CCDA workflow and add OMH/OPWDD flag handling in XSLT</description>
+  <revision>15</revision>
   <sourceConnector version="4.6.1">
     <metaDataId>0</metaDataId>
     <name>sourceConnector</name>
     <properties class="com.mirth.connect.connectors.http.HttpReceiverProperties" version="4.6.1">
       <pluginProperties>
-        <com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties version="4.6.1">
-  <authType>NONE</authType>
-        </com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties>
         <com.mirth.connect.plugins.ssl.SSLSettingsProperties version="4.6.1">
   <sslEnabled>false</sslEnabled>
           <mutualTlsEnabled>false</mutualTlsEnabled>
@@ -34,6 +31,9 @@ implemented common utility XSLT enhancements for the CCDA channel and updated th
           <truststoreSettingFromSystem>false</truststoreSettingFromSystem>
           <truststoreUid/>
         </com.mirth.connect.plugins.ssl.SSLSettingsProperties>
+        <com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties version="4.6.1">
+  <authType>NONE</authType>
+        </com.mirth.connect.plugins.httpauth.NoneHttpAuthProperties>
       </pluginProperties>
       <listenerConnectorProperties version="4.6.1">
         <host>0.0.0.0</host>
@@ -77,7 +77,7 @@ implemented common utility XSLT enhancements for the CCDA channel and updated th
         <entry>
           <string>Access-Control-Allow-Headers</string>
           <list>
-            <string>Content-Type,Authorization,X-TechBD-Tenant-ID,User-Agent,X-TechBD-REMOTE-IP,X-TechBD-Override-Request-URI,accept,X-TechBD-CIN,X-TechBD-OrgNPI,X-TechBD-OrgTIN,X-TechBD-Base-FHIR-URL,X-TechBD-Validation-Severity-Level,X-TechBD-Facility-ID,X-TechBD-Encounter-Type,X-TechBD-Screening-Code,X-TechBD-Part2</string>
+            <string>Content-Type,Authorization,X-TechBD-Tenant-ID,User-Agent,X-TechBD-REMOTE-IP,X-TechBD-Override-Request-URI,accept,X-TechBD-CIN,X-TechBD-OrgNPI,X-TechBD-OrgTIN,X-TechBD-Base-FHIR-URL,X-TechBD-Validation-Severity-Level,X-TechBD-Facility-ID,X-TechBD-Encounter-Type,X-TechBD-Screening-Code,X-TechBD-Part2,X-TechBD-OMH,X-TechBD-OPWDD</string>
           </list>
         </entry>
         <entry>
@@ -265,8 +265,6 @@ function removeEmptyValues(key, value) {
   return value; // Keep the value as is
 }
 
-
-
 /**
 * Util function to generate json string wit hstatus and message
 */
@@ -315,10 +313,10 @@ function sendDataLedgerSync(payload) {
     
     var apiUrl = LookupHelper.get(&quot;Config&quot;, &quot;DATA_LEDGER_API_URL&quot;);
 
-// 1️⃣ Load from Lookup Manager (NOT sensitive)
+//Load from Lookup Manager (NOT sensitive)
 var dataLedgerApiKey = LookupHelper.get(&quot;Config-sensitive&quot;, &quot;TECHBD_NYEC_DATALEDGER_API_KEY&quot;);
 &#xd;
-// 3️⃣ Store real key into channelMap
+//store real key into channelMap
 channelMap.put(&quot;DATA_LEDGER_API_KEY&quot;, dataLedgerApiKey);
 
 logger.info(&quot;✔ DataLedger API Key loaded from Lookup manager (Config-sensitive) group&quot;);
@@ -393,7 +391,7 @@ function saveDataLedgerSync(interactionId) {
   	});		
 		
 	// Check if tracking is enabled
-	var trackingEnabled = java.lang.System.getenv(&quot;DATA_LEDGER_TRACKING&quot;);
+	var trackingEnabled = LookupHelper.get(&quot;Config&quot;, &quot;DATA_LEDGER_TRACKING&quot;);
 	if (trackingEnabled != null &amp;&amp; trackingEnabled.toLowerCase() == &quot;true&quot;) {
 	   logger.info(&quot;data ledger api call -BEGIN sent&quot;);
 	   try {
@@ -866,7 +864,7 @@ function convertCcdaToFhirBundle(phiFilteredXml) {
           <script>logger.info(&quot;HTTP request validation started.&quot;);
 
 /********************************************
-    1️⃣ Fetch JDBC configuration from Lookup Manager(Config-sensitive)
+    1️ Fetch JDBC configuration from Lookup Manager(Config-sensitive)
 ********************************************/
 
 try {
@@ -883,7 +881,7 @@ logger.info(&quot;✔**************************** jdbc_Username loaded into chan
 }
 
 /********************************************
-    2️⃣ FETCH DATA LEDGER API KEY (Plain text)
+    2 FETCH DATA LEDGER API KEY (Plain text)
 ********************************************/
 
 try {
@@ -898,7 +896,7 @@ try {
 }
 
 /********************************************
-    3️⃣ FETCH FHIR BUNDLE SUBMISSION API URL (Plain text)
+    3️ FETCH FHIR BUNDLE SUBMISSION API URL (Plain text)
 ********************************************/
 try {
     var fhirApiUrl = LookupHelper.get(&quot;Config&quot;, &quot;MC_FHIR_BUNDLE_SUBMISSION_API_URL&quot;);
@@ -918,7 +916,7 @@ try {
 }
 
 /********************************************
-    6️⃣ FETCH JDBC URL (Plain text)
+    4 FETCH JDBC URL (Plain text)
 ********************************************/
 try {
 
@@ -941,7 +939,7 @@ try {
 }
 
 /********************************************
-    4️⃣ FETCH CSV SERVICE API URL (Plain text)
+    5 FETCH CSV SERVICE API URL (Plain text)
 ********************************************/
 try {
     var csvServiceUrl = LookupHelper.get(&quot;Config&quot;, &quot;TECHBD_CSV_SERVICE_API_URL&quot;);
@@ -961,7 +959,7 @@ try {
 }
 
 /********************************************
-    5️⃣ FETCH DEFAULT DATALAKE API URL (Plain text)
+    6 FETCH DEFAULT DATALAKE API URL (Plain text)
 ********************************************/
 try {
     var datalakeApiUrl = LookupHelper.get(&quot;Config&quot;, &quot;TECHBD_DEFAULT_DATALAKE_API_URL&quot;);
@@ -981,7 +979,7 @@ try {
 }
 
 /********************************************
-    5️⃣ FETCH DEFAULT DATALAKE API URL (Plain text)
+    7 FETCH DEFAULT DATALAKE API URL (Plain text)
     WITH HEADER OVERRIDE SUPPORT
 ********************************************/
 
@@ -997,7 +995,7 @@ try {
     } 
 
 /********************************************
-    9️⃣ FETCH DATA LEDGER  DATA_LEDGER_TRACKING (Plain text)
+    8 FETCH DATA LEDGER  DATA_LEDGER_TRACKING (Plain text)
 ********************************************/
  
 try {
@@ -1013,7 +1011,7 @@ try {
 }
 
 /********************************************
-    8️⃣ FETCH DATA LEDGER API URL (Plain text)
+    9 FETCH DATA LEDGER API URL (Plain text)
 ********************************************/
 
 try {
@@ -1027,7 +1025,7 @@ try {
     logger.error(&quot;❌ Error processing DataLedger API URL from Lookup Manager(config): &quot; + e.message);
 }
 /********************************************
-    7️⃣ FETCH HUB UI URL (Plain text)
+    10 FETCH HUB UI URL (Plain text)
 ********************************************/
 // Retrieves the Hub UI URL used to populate the Access-Control-Allow-Origin header
 try {
@@ -1141,13 +1139,25 @@ if (requestedPath == &quot;/ccda/Bundle/&quot; || requestedPath == &quot;/ccda/B
 	    channelMap.put(&apos;X-TechBD-Screening-Code&apos;, screeningCode);
 	}
 
-//Part 2 Data Flagging 
+	//Part 2 Data Flagging 
 	var part2DataFlag = $(&apos;headers&apos;).getHeader(&apos;X-TechBD-Part2&apos;);	
 	logger.info(&quot;X-TechBD-Part2: &quot; + part2DataFlag);
 	if (part2DataFlag &amp;&amp; String(part2DataFlag).trim() !== &quot;&quot;) {
 	    channelMap.put(&apos;X-TechBD-Part2&apos;, part2DataFlag);
 	}
-
+	// 8. OMH Flagging
+	var OMHFlag = $(&apos;headers&apos;).getHeader(&apos;X-TechBD-OMH&apos;);
+	logger.info(&quot;X-TechBD-OMH: &quot; + OMHFlag);
+	if (OMHFlag &amp;&amp; String(OMHFlag).trim() !== &quot;&quot;) {
+	    channelMap.put(&apos;X-TechBD-OMH&apos;, OMHFlag);
+	}
+	
+	// 9. OPWDD Flagging
+	var OPWDDFlag = $(&apos;headers&apos;).getHeader(&apos;X-TechBD-OPWDD&apos;);
+	logger.info(&quot;X-TechBD-OPWDD: &quot; + OPWDDFlag);
+	if (OPWDDFlag &amp;&amp; String(OPWDDFlag).trim() !== &quot;&quot;) {
+	    channelMap.put(&apos;X-TechBD-OPWDD&apos;, OPWDDFlag);
+	}
 }
 
 // If any missing headers were found, throw a single error
@@ -1247,7 +1257,6 @@ var fhirBundleSubmissionApiUrl = LookupHelper.get(&quot;Config&quot;, &quot;MC_F
         globalMap.put(&apos;fhirBundleSubmissionApiUrl&apos;, fhirBundleSubmissionApiUrl);
         logger.info(&quot;FHIR Bundle Submission API URL (from Config): &quot; + fhirBundleSubmissionApiUrl);
     }
-/////////////////////////////////////
 
 // Fetch and check environment variable: MC_CCDA_SCHEMA_FOLDER
 var ccdaSchemaFolder = LookupHelper.get(&quot;Config&quot;, &quot;MC_CCDA_SCHEMA_FOLDER&quot;);
@@ -1308,7 +1317,7 @@ function getManufacturerModelName(xmlData) {
 			    logger.warn(&quot;Both manufacturerModelName and softwareName are empty&quot;);
 			    lowerName = &quot;&quot;;
 			}
-			   /////////////////////////////*****************/////////////////////////////                 
+			  
 			if (lowerName.indexOf(&quot;epic&quot;) !== -1) {
 			    	ehrVendor = &quot;Epic&quot;;
 			    	cdaPhiFilterXsltPath = ccdaSchemaFolder + &quot;/cda-phi-filter-epic.xslt&quot;;
@@ -1514,7 +1523,7 @@ function getPatientMRN(patientRoles) {
 
     channelMap.put(&apos;Patient-MRN&apos;, extensionAttr);
 }
-////////////////////////////////////////////////////////////////////////////
+
 function getEncounterEffectiveTime(encounterNodeList) {
     var fallbackTime = new java.text.SimpleDateFormat(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SS&apos;Z&apos;&quot;).format(new java.util.Date());
     var effectiveTimeOut = &apos;&apos;;
@@ -1622,7 +1631,6 @@ function getCategoryCode(code) {
     }
 }
 
-////////////////////////////////////////////////////////
 // Define Namespace Resolver
 function getObservationCategoryCodes(transformer, observations) {    
     var xml = new XML(observations); // Parse the source message as XML    
@@ -1701,8 +1709,6 @@ function getObservationCategoryCodes(transformer, observations) {
 	return transformer;
 }
 
-///////////////////////////////////////////////////////
-
 function getMultipleAnswersForComponent(transformer, observations) {
 	if (observations == null) {
         return transformer;
@@ -1779,7 +1785,7 @@ function getMultipleAnswersForComponent(transformer, observations) {
 	transformer.setParameter(&apos;componentAnswersXml&apos;, JSON.stringify(codingArray));
 	return transformer;
 }
-//////////////////////////////////////////////////////////////////////
+
 // Define Namespace Resolver
 function setResourceIdParameters(transformer) {
     	// Parse XML
@@ -1898,14 +1904,30 @@ function setResourceIdParameters(transformer) {
      transformer.setParameter(&apos;grouperScreeningCode&apos;, String(grouperScreeningCode));
      logger.info(&apos;grouperScreeningCode&apos; + &quot; : &quot; + grouperScreeningCode);
 
-// Set part2 flag
+	// Set part2 flag
      var part2DataFlag = channelMap.get(&apos;X-TechBD-Part2&apos;);
 	var flagValue = &quot;false&quot;;
 	if (part2DataFlag &amp;&amp; String(part2DataFlag).toLowerCase() === &quot;true&quot;) {
 	    flagValue = &quot;true&quot;;
 	}	
 	transformer.setParameter(&apos;X-TechBD-Part2&apos;, flagValue);
-	
+
+	// Set OMH flag
+	var omhFlag = channelMap.get(&apos;X-TechBD-OMH&apos;);
+	var omhFlagValue = &quot;false&quot;;
+	if (omhFlag &amp;&amp; String(omhFlag).toLowerCase() === &quot;true&quot;) {
+    	omhFlagValue = &quot;true&quot;;
+	}
+	transformer.setParameter(&apos;X-TechBD-OMH&apos;, omhFlagValue);
+
+	// Set OPWDD flag
+	var opwddFlag = channelMap.get(&apos;X-TechBD-OPWDD&apos;);
+	var opwddFlagValue = &quot;false&quot;;
+	if (opwddFlag &amp;&amp; String(opwddFlag).toLowerCase() === &quot;true&quot;) {
+    	opwddFlagValue = &quot;true&quot;;
+	}
+	transformer.setParameter(&apos;X-TechBD-OPWDD&apos;, opwddFlagValue);
+
 	// Extract `location`
      try {
 	    var location;
@@ -1991,8 +2013,6 @@ function set_fhir_resource_profile_urls(transformer) {
 	var practitionerMetaProfileUrl = LookupHelper.get(&quot;Config&quot;, &quot;PROFILE_URL_PRACTITIONER&quot;);
 	var procedureMetaProfileUrl = LookupHelper.get(&quot;Config&quot;, &quot;PROFILE_URL_PROCEDURE&quot;);
 	var locationMetaProfileUrl = LookupHelper.get(&quot;Config&quot;, &quot;PROFILE_URL_LOCATION&quot;);
-	//logger.info(&quot;$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*************************???????????????????????????????&quot; + &quot;: &quot; + locationMetaProfileUrl);
-	//&quot;http://hl7.org/fhir/us/sdoh-clinicalcare/StructureDefinition/SDOHCC-Location&quot;;
 
 	transformer = set_profile_url(transformer, baseFhirUrl, &apos;BASE_FHIR_URL&apos;, &apos;baseFhirUrl&apos;);
 	transformer = set_profile_url(transformer, bundleMetaProfileUrl, &apos;PROFILE_URL_BUNDLE&apos;, &apos;bundleMetaProfileUrl&apos;);
@@ -2037,19 +2057,15 @@ function getConsentResourceStatus(sourceXml) {
 		var consentInfo = {};
 	    	consentInfo.code = &apos;Consent-Status&apos;;
 	    	consentInfo.status = &quot;TechBD-Generated&quot;;
-	    	///////////////////////////////////////////////////////////////////////////////////////////////
 	    	var ehrVendor = (channelMap.get(&apos;ehrVendor&apos;) || &apos;&apos;).toLowerCase();
 	    	var ccdaConsentCode = ehrVendor == &apos;athenahealth&apos; ? &apos;29762-2&apos; : &apos;47519-4&apos;;
-		///////////////////////////////////////////////////////////////////////////////////////////
 		var xmlDoc = new XML(sourceXml); // Convert XML string to XML object			
 		default xml namespace = &quot;urn:hl7-org:v3&quot;; // Default namespace for HL7 documents
-	///////////////////////////////////s//////////////////////////////////////
 		// If consent section is there, the consentInfo.status should be &quot;provided&quot;.
 		var consentSection = xmlDoc.*::authorization.*::consent;
 		if (consentSection != null &amp;&amp; consentSection.length() &gt; 0) {
 			consentInfo.status = &quot;provided&quot;;
 		}
-		///////////////////////////////e//////////////////////////
 		else {
 			// Iterate through all &lt;section&gt; elements
 			for each (var section in xmlDoc..section) {
@@ -2125,7 +2141,7 @@ function validateMandatoryFields() {
 	        var familyName = name ? name.*::family.toString() : &quot;&quot;;
 	        if (!givenName) { errors.push(&quot;Patient name (given) -&gt; ClinicalDocument.recordTarget.patientRole.patient.name.given.&quot;); }
 		   if (!familyName) { errors.push(&quot;Patient name (family) -&gt; ClinicalDocument.recordTarget.patientRole.patient.name.family.&quot;); }
-/////////////////////////////////////////////////////////////////**
+
 	        // 3. Gender
 	        var genderValue = &quot;&quot;;
 		   if (patient) {
@@ -2147,7 +2163,7 @@ function validateMandatoryFields() {
 			        &quot;Patient gender -&gt; ClinicalDocument.recordTarget.patientRole.patient.administrativeGenderCode.&quot;
 			    );
 		   }
-/////////////////////////////////////////////////////**
+
 	        // 4. Birth Date
 	        var birthDate = &quot;&quot;;
 		   if (patient) {
@@ -2388,7 +2404,6 @@ if (requestedPath == &quot;/ccda/Bundle/$validate/&quot; ||
 
 }
 
-///////////////////
 else if (requestedPath == &quot;/ccda/Bundle&quot; || requestedPath == &quot;/ccda/Bundle/&quot;) {
 
 	channelMap.put(&quot;endpoint&quot;, &quot;bundle&quot;);
@@ -2577,7 +2592,6 @@ else if (requestedPath == &quot;/ccda/Bundle&quot; || requestedPath == &quot;/cc
 	responseMap.put(&apos;finalResponse&apos;, JSON.stringify(cleanedJsonString));
      return &apos;dest_bundle&apos;;
 }
-/////////////////////////////////////////////////////////////////////
 else {
     // Handle invalid paths  
     var errorMsg = &quot;Error processing XML file upload: &quot; + e.message;
@@ -3150,7 +3164,7 @@ return;</undeployScript>
     <metadata>
       <enabled>true</enabled>
       <lastModified>
-        <time>1775043636272</time>
+        <time>1776329379624</time>
         <timezone>Asia/Calcutta</timezone>
       </lastModified>
       <pruningSettings>
@@ -3161,14 +3175,14 @@ return;</undeployScript>
     </metadata>
     <channelTags>
       <channelTag>
-        <id>b6436313-f92e-464d-909c-05d2bd007084</id>
-        <name>0_5_26</name>
+        <id>f7881441-88b0-4182-9606-6c0b817bc4d9</id>
+        <name>0_5_27</name>
         <channelIds>
-          <string>d34fa745-23b3-4271-b58b-a380f5cf5f0a</string>
+          <string>3322c442-7c6e-46b4-b6d1-f0cff8c4741d</string>
         </channelIds>
         <backgroundColor>
-          <red>128</red>
-          <green>128</green>
+          <red>255</red>
+          <green>0</green>
           <blue>0</blue>
           <alpha>255</alpha>
         </backgroundColor>
