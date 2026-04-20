@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Version : 0.2.8 -->
+<!-- Version : 0.2.9 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
                 xmlns:ccda="urn:hl7-org:v3"
                 xmlns:fhir="http://hl7.org/fhir"
@@ -1030,6 +1030,8 @@
 					  <!-- Loop through all OBX segments globally and filter by code -->
 					  <xsl:for-each select="//OBX[
 											  contains($derivedFromCodes, concat('|', normalize-space(OBX.3/OBX.3.1), '|'))
+                        and string(OBX.5/OBX.5.1)
+                        and normalize-space(OBX.5/OBX.5.1) != 'UNK'
 											  and not(preceding::OBX[
 												normalize-space(OBX.3/OBX.3.1) = normalize-space(current()/OBX.3/OBX.3.1)
 											  ])
