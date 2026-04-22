@@ -1,7 +1,7 @@
 [
     {
         "port": 2575,
-        "responseType": "mllp",
+        "responseType": "outbound",
         "protocol": "TCP"
     },
     {
@@ -15,7 +15,7 @@
     },
        {
         "port": 5555,
-        "responseType": "mllp",
+        "responseType": "outbound",
         "protocol": "TCP",
         "route": "/hold",
         "dataDir": "/outbound",

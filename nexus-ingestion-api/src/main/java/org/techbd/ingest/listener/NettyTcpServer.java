@@ -283,8 +283,10 @@ public class NettyTcpServer implements MessageSourceProvider {
                                 // the resolved PortEntry has a keepAliveTimeout configured.
                                 ch.pipeline().addLast("defaultReadTimeout",
                                         new ReadTimeoutHandler(readTimeoutSeconds, TimeUnit.SECONDS));
-
-                                String activeProfile = System.getenv("SPRING_PROFILES_ACTIVE");
+                                String activeProfile = System.getProperty("SPRING_PROFILES_ACTIVE");
+                                if (null == activeProfile) {
+                                    activeProfile = System.getenv("SPRING_PROFILES_ACTIVE");
+                                }
 
                                 // HAProxy protocol support
                                 if (!"sandbox".equals(activeProfile)) {
@@ -315,7 +317,11 @@ public class NettyTcpServer implements MessageSourceProvider {
                                             ctx.channel().attr(INTERACTION_ATTRIBUTE_KEY).set(interactionId);
                                         }
 
-                                        String activeProfile = System.getenv("SPRING_PROFILES_ACTIVE");
+                                        String activeProfile = System.getProperty("SPRING_PROFILES_ACTIVE");
+                                        if (null == activeProfile) {
+                                            activeProfile = System.getenv("SPRING_PROFILES_ACTIVE");
+                                        }
+
                                         if ("sandbox".equals(activeProfile)) {
                                             handleSandboxProxy(ctx, sessionId, interactionId);
                                         } else {

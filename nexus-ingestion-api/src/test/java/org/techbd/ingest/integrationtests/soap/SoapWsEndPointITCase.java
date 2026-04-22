@@ -3,7 +3,7 @@ package org.techbd.ingest.integrationtests.soap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.techbd.ingest.integrationtests.util.SoapTestFixtures.extractXPath;
 import static org.techbd.ingest.integrationtests.util.SoapTestFixtures.loadFixture;
-import org.techbd.ingest.NexusIngestionApiApplication;
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContext;
@@ -23,14 +22,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.techbd.ingest.commons.Constants;
 import org.techbd.ingest.integrationtests.base.BaseIntegrationTest;
-import org.techbd.ingest.NexusIngestionApiApplication;
+import org.techbd.ingest.integrationtests.base.NexusIntegrationTest;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.techbd.ingest.NexusIngestionApiApplication;
+
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
@@ -38,10 +36,6 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.techbd.ingest.integrationtests.base.NexusIntegrationTest;
 
 /**
  * Full-stack integration tests for SOAP endpoints.

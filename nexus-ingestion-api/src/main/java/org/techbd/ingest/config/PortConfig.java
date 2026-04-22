@@ -125,10 +125,10 @@ public class PortConfig implements InitializingBean {
     }
 
     private String getProperty(String key) {
-        String value = System.getenv(key);
+        String value = environment.getProperty(key);
 
         if (value == null || value.isBlank()) {
-            value = environment.getProperty(key); // added for junits as junits have access to environment only
+            value = System.getenv(key); // added for junits as junits have access to environment only
         }
 
         return value;
