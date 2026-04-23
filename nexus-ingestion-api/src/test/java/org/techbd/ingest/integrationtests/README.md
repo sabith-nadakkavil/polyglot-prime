@@ -75,14 +75,15 @@ This base class provides:
 
 ---
 
-## Required Annotations
+## Base Class Annotations
 
-All integration tests must include:
+The `BaseIntegrationTest` class is annotated with:
 
 ```
 @NexusIntegrationTest
-@Tag("integration")
 ```
+
+By extending `BaseIntegrationTest`, your test class automatically inherits this configuration.
 
 ---
 
@@ -96,6 +97,7 @@ It includes:
 * ActiveProfiles("test")
 * TestPropertySource (LocalStack configuration)
 * Testcontainers
+* Tag("integration")
 
 ### Purpose
 
@@ -109,17 +111,6 @@ It includes:
 
 ---
 
-## Tag("integration")
-
-This annotation is required for integration tests to be executed.
-
-### Why it is required
-
-* The Maven Failsafe plugin runs only tests tagged as "integration"
-* Prevents unit tests from running in the integration test phase
-* Enables clear separation between unit and integration tests
-
----
 
 ## Naming Convention
 
@@ -213,7 +204,7 @@ This behavior ensures:
 A test is executed only if both conditions are met:
 
 * The class name matches `*ITCase.java`
-* The test is annotated with `@Tag("integration")`
+* The test extends `BaseIntegrationTest` (which provides the required `@NexusIntegrationTest` annotation and "integration" tag)
 
 ---
 
@@ -232,15 +223,110 @@ nexus-ingestion-api/target/site/failsafe-report.html
 
 ---
 
+## Asserting Flows based on list.json
+
+The `IngestionAssertionHelper` is the standard utility for asserting S3 and SQS outcomes in integration tests. The method you choose and the parameters you provide depend directly on the port configuration defined in `list.json`.
+
+### 1. Default Flow (Standard Routing)
+
+When your `list.json` has standard routing without `route=/hold` and no specific `sourceId` / `msgType` for tenant segregation:
+
+**list.json excerpt:**
+```json
+{
+  "port": 9000,
+  "route": "/api/ingest"
+}
+```
+
+**Assertion:**
+```java
+assertionHelper().assertDefaultFlow(FlowAssertionParams.builder()
+    .dataBucket(dataBucketName)
+    .metadataBucket(metadataBucketName)
+    .queueUrl(mainQueueUrl)
+    .expectedMessageGroupId("pass expected messagegrroupid")
+    .expectedPayload(requestPayload)
+    .build(), softly);
+```
+
+### 2. Hold Flow (Single Bucket, Port-based)
+
+When your `list.json` specifies `route=/hold`, the application stores both data and metadata in a single "hold" bucket, categorized by port.
+
+**list.json excerpt:**
+```json
+{
+  "port": 2575,
+  "route": "/hold",
+  "dataDir": "/outbound",
+  "metadataDir": "/outbound"
+}
+```
+
+**Assertion:**
+```java
+assertionHelper().assertHoldFlow(FlowAssertionParams.builder()
+    .dataBucket(holdBucketName)
+    .holdFlow(true)
+    .port(2575)
+    .dataDir("/outbound")
+    .metadataDir("/outbound")
+    .queueUrl(holdQueueUrl)
+    .expectedMessageGroupId("pass expected messagegrroupid")
+    .expectedPayload(requestPayload)
+    .build(), softly);
+```
+
+### 3. Tenant-Aware Flow (Source & Message Type)
+
+When `list.json` includes `sourceId` and `msgType`, the application injects a tenant segment into the S3 key path.
+
+**list.json excerpt:**
+```json
+{
+  "sourceId": "SYS_A",
+  "msgType": "ADT",
+  "dataDir": "/tenant-data"
+}
+```
+
+**Assertion:**
+```java
+assertionHelper().assertCustomFlow(FlowAssertionParams.builder()
+    .dataBucket(dataBucketName)
+    .metadataBucket(metadataBucketName)
+    .tenantId("SYS_A_ADT") // sourceId + "_" + msgType
+    .dataDir("/tenant-data")
+    .queueUrl(mainQueueUrl)
+    .expectedPayload(requestPayload)
+    .build(), softly);
+```
+
+### 4. Error Flow
+
+When an ingestion fails (e.g., parsing error), the payload is stored under an `error/` prefix, and SQS messaging is skipped.
+
+**Assertion:**
+```java
+assertionHelper().assertErrorFlow(FlowAssertionParams.builder()
+    .dataBucket(dataBucketName)
+    .errorFlow(true)
+    .expectedPayload(requestPayload)
+    // No queueUrl needed since SQS is skipped
+    .build(), softly);
+```
+
+---
+
 ## Summary Checklist
 
 When adding a new integration test:
 
 * Place test under `org.techbd.ingest.integrationtests`
 * Extend `BaseIntegrationTest`
-* Use `@NexusIntegrationTest`
-* Add `@Tag("integration")`
 * Name class with `*ITCase` suffix
+* Use `IngestionAssertionHelper` to assert S3 and SQS flows
 * Add resources to the correct folder:
 
   * tcp-test-resources
