@@ -92,7 +92,7 @@ class NettyTcpServerITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DIAG: SPRING_PROFILES_ACTIVE must be 'test'")
-    void assertProfileIsTest() {
+    void shouldHaveTestProfileActive() {
         assertThat(System.getProperty("SPRING_PROFILES_ACTIVE"))
                 .as("SPRING_PROFILES_ACTIVE must be 'test' so HAProxyMessageDecoder is active")
                 .isEqualTo("test");
@@ -100,7 +100,7 @@ class NettyTcpServerITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DIAG: TCP server is listening on configured port")
-    void tcpServer_isListening() {
+    void shouldAcceptTcpConnections() {
         try (Socket socket = new Socket(TCP_HOST, TCP_SERVER_PORT)) {
             assertThat(socket.isConnected())
                     .as("TCP server must be reachable on port " + TCP_SERVER_PORT)
@@ -123,7 +123,7 @@ class NettyTcpServerITCase extends BaseIntegrationTest {
      */
     @Test
     @DisplayName("IT: Port 2575 — MLLP HL7 with ZNT — happy path, S3 + SQS full flow")
-    void port2575_mllpHl7WithZnt_happyPath() throws Exception {
+    void shouldProcessHl7WithZnt_andPersistToS3AndSqs() throws Exception {
         String hl7 = loadHl7Fixture("hl7_message.hl7");
         SoftAssertions softly = new SoftAssertions();
 
@@ -138,14 +138,14 @@ class NettyTcpServerITCase extends BaseIntegrationTest {
     }
 
     /**
-     * IT: Port 2575 — MLLP HL7 WITHOUT ZNT — group-id falls back to PROXY dest port.
+     * IT: Port 2575 — MLLP HL7 WITHOUT ZNT —no publishing to queue, ACK is a NACK with error mentioning missing ZNT.
      *
      * <p>Expected ACK: {@code MSA|AR} + ERR mentioning missing ZNT.
      * Expected {@code messageGroupId}: {@code "2575"}.
      */
     @Test
     @DisplayName("IT: Port 2575 — MLLP HL7 without ZNT — group-id = PROXY destPort (\"2575\")")
-    void port2575_mllpHl7WithoutZnt_groupIdFallsBackToDestPort() throws Exception {
+    void shouldRejectHl7WithoutZnt() throws Exception {
         String hl7 = loadHl7Fixture("hl7_without_znt.hl7");
         SoftAssertions softly = new SoftAssertions();
 
@@ -167,7 +167,7 @@ class NettyTcpServerITCase extends BaseIntegrationTest {
      */
     @Test
     @DisplayName("IT: Port 2575 — no message sent — server closes after read-timeout (10 s)")
-    void port2575_noMessage_serverClosesAfterReadTimeout() throws Exception {
+    void shouldCloseConnectionWhenNoMessageReceivedWithinTimeout() throws Exception {
         SoftAssertions softly = new SoftAssertions();
 
         long start = System.currentTimeMillis();
@@ -216,7 +216,7 @@ class NettyTcpServerITCase extends BaseIntegrationTest {
      */
     @Test
     @DisplayName("IT: Port 5555 — HOLD flow — MLLP HL7 with ZNT, full S3 + SQS validation")
-    void port5555_mllpHl7WithZnt_holdFlow() throws Exception {
+    void shouldProcessHl7WithZnt_inHoldFlow_andPersistToS3AndSqs() throws Exception {
         String hl7 = loadHl7Fixture("hl7_message_with_znt.hl7");
         SoftAssertions softly = new SoftAssertions();
 

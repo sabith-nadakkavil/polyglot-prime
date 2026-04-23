@@ -75,7 +75,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DIAG: Health check returns 200")
-    void healthCheck() {
+    void shouldReturnHealthyStatus() {
         ResponseEntity<String> response = restTemplate.getForEntity(
                 "http://localhost:" + port + "/actuator/health", String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -83,7 +83,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DIAG: Port 9000 config is present in list.json on S3")
-    void portConfigContainsPort9000() throws Exception {
+    void shouldLoadHttpPortConfiguration() throws Exception {
         String json = new String(
                 s3Client.getObject(GetObjectRequest.builder()
                         .bucket(PORT_CONFIG_BUCKET)
@@ -104,7 +104,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DIAG: messageDispatcher beans are registered")
-    void messageDispatcherBeansRegistered() {
+    void shouldRegisterMessageDispatcherBeans() {
         long count = java.util.Arrays.stream(context.getBeanDefinitionNames())
                 .filter(name -> name.contains("messageDispatcher"))
                 .peek(System.out::println)
@@ -114,7 +114,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("DIAG: Servlet registration beans are mapped")
-    void servletMappingsRegistered() {
+    void shouldMapServletRegistrations() {
         var beans = context.getBeansOfType(
                 org.springframework.boot.web.servlet.ServletRegistrationBean.class);
         assertThat(beans).isNotEmpty();
@@ -140,7 +140,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
      */
     @Test
     @DisplayName("IT: PIX-ADD SOAP 1.2 — full flow (HTTP + S3 + SQS)")
-    void pixAdd_soap12_fullFlow() throws Exception {
+    void shouldProcessPixAddSoap12_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-add-request_1_2.txt");
         String expectedAck = loadFixture("pix-add-response_1_2.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -163,7 +163,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
      */
     @Test
     @DisplayName("IT: PIX-ADD SOAP 1.2 — HOLD flow (HTTP + S3 Hold Bucket + SQS)")
-    void pixAdd_soap12_holdFlow() throws Exception {
+    void shouldProcessPixAddSoap12_inHoldFlow_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-add-request_1_2.txt");
         String expectedAck = loadFixture("pix-add-response_1_2.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -183,7 +183,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PIX-ADD SOAP 1.1 — full flow (HTTP + S3 + SQS)")
-    void pixAdd_soap11_fullflow() throws Exception {
+    void shouldProcessPixAddSoap11_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-add-request_1_1.txt");
         String expectedAck = loadFixture("pix-add-response_1_1.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -203,7 +203,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PIX-MERGE SOAP 1.2 — full flow (HTTP + S3 + SQS)")
-    void pixMerge_soap12_fullflow() throws Exception {
+    void shouldProcessPixMergeSoap12_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-merge-request_1_2.txt");
         String expectedAck = loadFixture("pix-merge-response_1_2.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -219,7 +219,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PIX-MERGE SOAP 1.1 — full flow (HTTP + S3 + SQS)")
-    void pixMerge_soap11_fullflow() throws Exception {
+    void shouldProcessPixMergeSoap11_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-merge-request_1_1.txt");
         String expectedAck = loadFixture("pix-merge-response_1_1.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -239,7 +239,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PIX-UPDATE SOAP 1.2 — full flow (HTTP + S3 + SQS)")
-    void pixUpdate_soap12_fullflow() throws Exception {
+    void shouldProcessPixUpdateSoap12_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-update-request_1_2.txt");
         String expectedAck = loadFixture("pix-update-response_1_2.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -255,7 +255,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PIX-UPDATE SOAP 1.1 — full flow (HTTP + S3 + SQS)")
-    void pixUpdate_soap11_fullflow() throws Exception {
+    void shouldProcessPixUpdateSoap11_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pix-update-request_1_1.txt");
         String expectedAck = loadFixture("pix-update-response_1_1.txt");
         SoftAssertions softly = new SoftAssertions();
@@ -276,7 +276,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PNR SOAP 1.1 — full flow (HTTP + S3 + SQS)")
-    void pnr_soap11_FullFlow() throws Exception {
+    void shouldProcessPnrSoap11_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pnr-request_1_1.txt");
         SoftAssertions softly = new SoftAssertions();
 
@@ -295,7 +295,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PNR SOAP 1.2 — full flow (HTTP + S3 + SQS)")
-    void pnr_soap12_FullFlow() throws Exception {
+    void shouldProcessPnrSoap12_andPersistToS3AndSqs() throws Exception {
         String request = loadFixture("pnr-request_1_2.txt");
         SoftAssertions softly = new SoftAssertions();
 
@@ -318,7 +318,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PNR MTOM — RegistryResponse Success returned")
-    void pnrMtom_successReturned() throws Exception {
+    void shouldProcessPnrMtom_successReturned() throws Exception {
         String request = loadFixture("pnr-xdsb-mtom-request.txt");
         SoftAssertions softly = new SoftAssertions();
 
@@ -336,7 +336,7 @@ class SoapWsEndPointITCase extends BaseIntegrationTest {
 
     @Test
     @DisplayName("IT: PNR MTOM — wsa:RelatesTo echoes MTOM request MessageID")
-    void pnrMtom_relatesTo_matchesMtomMessageId() throws Exception {
+    void shouldProcessPnrMtom_relatesTo_matchesMtomMessageId() throws Exception {
         String request = loadFixture("pnr-xdsb-mtom-request.txt");
         SoftAssertions softly = new SoftAssertions();
 
