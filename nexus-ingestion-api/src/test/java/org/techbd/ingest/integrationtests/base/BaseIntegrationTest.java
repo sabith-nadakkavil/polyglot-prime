@@ -83,22 +83,15 @@ public abstract class BaseIntegrationTest {
                         "txd-sbx-util-queue.fifo");
 
         protected static final Map<String, String> queueUrls = new HashMap<>();
-
-        // ── LocalStack container ──────────────────────────────────────────────────
-
-        /**
-         * A single LocalStack container shared across the entire test suite.
-         * {@code static} + {@code @Container} ensures Testcontainers starts it once
-         * per JVM and tears it down only after all tests finish.
-         */
-        @Container
         static final LocalStackContainer localStack = new LocalStackContainer(
                         DockerImageName.parse("localstack/localstack:3.0"))
                         .withServices(LocalStackContainer.Service.S3,
                                         LocalStackContainer.Service.SQS)
                         .withStartupAttempts(3)
                         .waitingFor(Wait.forLogMessage(".*Ready.*", 1));
-
+        static {
+                localStack.start();
+        }
         // ── AWS clients ───────────────────────────────────────────────────────────
 
         protected static S3Client s3Client;

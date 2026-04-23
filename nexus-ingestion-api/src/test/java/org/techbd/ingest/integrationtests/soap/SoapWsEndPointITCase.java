@@ -56,8 +56,6 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
  * the envelope namespace via XPath rather than fragile string contains.</li>
  * </ul>
  */
-@NexusIntegrationTest
-@Tag("integration")
 class SoapWsEndPointITCase extends BaseIntegrationTest {
 
         @Autowired

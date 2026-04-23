@@ -103,14 +103,6 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
  * header.</li>
  * </ul>
  */
-@NexusIntegrationTest
-@TestPropertySource(properties = {
-                // Registers profile in the Spring Environment (belt-and-suspenders alongside
-                // the System.getenv() override below).
-                "SPRING_PROFILES_ACTIVE=test",
-                "TCP_READ_TIMEOUT_SECONDS=10"
-})
-@Tag("integration")
 class NettyTcpServerITCase extends BaseIntegrationTest {
 
         // ── Constants
